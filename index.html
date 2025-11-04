@@ -415,7 +415,8 @@
     <p class="small-label">
       Sort by:
       <button onclick="setStorageSort('dex')">Dex #</button>
-      <button onclick="setStorageSort('level')">Level</button>
+      <button onclick="setStorageSort('levelDesc')">Level ↓</button>
+      <button onclick="setStorageSort('levelAsc')">Level ↑</button>
       |
       <button onclick="setStorageSort('totalDesc')">Total Stats ↓</button>
       <button onclick="setStorageSort('totalAsc')">Total Stats ↑</button>
@@ -928,7 +929,6 @@ function loadGame(){
     if(!data.player.storage)data.player.storage=[];
     if(!data.trainer) data.trainer = { level:1, exp:0 };
 
-    // ensure activeIndex exists and is valid
     if (data.player.activeIndex == null) data.player.activeIndex = 0;
     const plen = data.player.party.length;
     if (plen === 0) {
@@ -1316,8 +1316,11 @@ function renderStorage(){
     const spdA = getSpeed(a), spdB = getSpeed(b);
 
     switch (storageSortMode){
-      case "level":
+      case "levelDesc":
         if(lvlB!==lvlA) return lvlB-lvlA;
+        return dexA-dexB;
+      case "levelAsc":
+        if(lvlA!==lvlB) return lvlA-lvlB;
         return dexA-dexB;
       case "totalDesc":
         if(totalB!==totalA) return totalB-totalA;
@@ -2162,7 +2165,8 @@ function moveStorageToParty(idx){
 
 function setStorageSort(mode){
   const allowed = [
-    "dex","level",
+    "dex",
+    "levelDesc","levelAsc",
     "totalDesc","totalAsc",
     "hpDesc","hpAsc",
     "atkDesc","atkAsc",
