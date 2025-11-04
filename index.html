@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Mini Monster RPG – Trainer Levels</title>
+  <title>Mini Monster RPG – Trainer Levels + Rarity Wild Levels + Lv100 Cap</title>
   <style>
     body {
       font-family: system-ui, sans-serif;
@@ -374,13 +374,14 @@
     <h2>Explore</h2>
     <p>
       Search the area for wild basic-form monsters (Stage 1 only), or occasionally run into trainers.
-      Very rarely, a <strong>legendary</strong> will appear.
-      To evolve monsters, level them in battle, then manually evolve them in the Party screen.
+      Wild levels now depend on <strong>rarity</strong>, not your team level. Normals are Lv 1–15.
+      Legendaries are rare and high-level.
     </p>
     <button id="explore-btn">Explore the wilds</button>
     <button id="random-trainer-btn">Battle random trainer (chaos)</button>
     <p class="small-label">
-      There are 1500+ species including 30 legendaries. Variants get rarer down the list (Normal → Shiny → ... → Divine).
+      There are 1500+ species including 30 legendaries. Variants get rarer (and generally higher-level)
+      down the list (Normal → Shiny → ... → Divine).
     </p>
   </section>
 
@@ -388,8 +389,9 @@
     <h2>Training Ground</h2>
     <p class="small-label">
       Click training gives a small amount of EXP to your active monster.
-      It’s slower than battling, but completely safe.
-      The higher your <strong>Trainer Level</strong>, the more EXP each training click gives.
+      It’s slower than battling but completely safe.
+      The higher your <strong>Trainer Level</strong>, the more EXP each training click gives
+      (+1 EXP per trainer level).
     </p>
     <button onclick="trainActive()">Train active monster</button>
   </section>
@@ -459,7 +461,7 @@
 </div>
 
 <script>
-const STORAGE_KEY = "miniMonsterRPG_v11_trainer_levels";
+const STORAGE_KEY = "miniMonsterRPG_v12_rarity_lv100";
 
 // ---- Variants ----
 const VARIANTS = {
@@ -735,9 +737,35 @@ function getSpeed(mon){
 
 function getNextLevelExp(l){return 25+l*18;}
 
+// Rarity-based wild level ranges
+function getWildLevelRangeForVariant(variantName, isLegendary){
+  if (isLegendary) {
+    // Legendaries are always high-level regardless of your team
+    return [40, 70];
+  }
+  switch (variantName) {
+    case "Normal":   return [1, 15];
+    case "Shiny":    return [5, 20];
+    case "Dark":     return [8, 25];
+    case "Metallic": return [10, 28];
+    case "Mystic":   return [12, 30];
+    case "Crystal":  return [15, 32];
+    case "Shadow":   return [18, 35];
+    case "Radiant":  return [20, 38];
+    case "Void":     return [22, 40];
+    case "Neon":     return [25, 42];
+    case "Pastel":   return [26, 44];
+    case "Toxic":    return [28, 46];
+    case "Gilded":   return [30, 48];
+    case "Cosmic":   return [32, 50];
+    case "Divine":   return [35, 55];
+    default:
+      return [1, 15];
+  }
+}
+
 // Trainer EXP (no cap)
 function getTrainerNextLevelExp(level){
-  // Slower than monster leveling
   return 120 + level * 80;
 }
 function addTrainerExp(amount){
@@ -750,7 +778,7 @@ function addTrainerExp(amount){
   let leveled = false;
   while (t.exp >= getTrainerNextLevelExp(t.level)) {
     t.exp -= getTrainerNextLevelExp(t.level);
-    t.level++;         // no explicit cap; trainer can grow forever
+    t.level++;
     leveled = true;
   }
   if (leveled) {
@@ -759,6 +787,8 @@ function addTrainerExp(amount){
 }
 
 function createMonsterInstance(speciesId,level,variantKey){
+  // Clamp spawn level between 1 and 100
+  level = Math.max(1, Math.min(level || 1, 100));
   const variant=variantKey||rollVariant();
   const s=getSpeciesById(speciesId);
   const mon={
@@ -1152,12 +1182,13 @@ function renderParty(){
     moves.textContent="Moves: "+mon.moves.map(id=>MOVES[id].name).join(", ");
 
     const need = getNextLevelExp(mon.level);
-    const pct = Math.max(0,Math.min(100,Math.round(mon.exp/need*100)));
+    const pctRaw = need>0 ? mon.exp/need : 0;
+    const pct = Math.max(0,Math.min(100,Math.round(pctRaw*100)));
     const xpWrap=document.createElement("div");
     xpWrap.innerHTML = `
       <div class="xp-bar">
         <div class="xp-bar-inner" style="width:${pct}%;"></div>
-        <div class="xp-bar-text">${mon.exp} / ${need}</div>
+        <div class="xp-bar-text">${mon.exp} / ${need}${mon.level>=100?" (MAX LV)":""}</div>
       </div>
     `;
 
@@ -1283,12 +1314,13 @@ function renderStorage(){
     sub.innerHTML=`<span>Variant: ${v.name}${v.emoji?" "+v.emoji:""}</span><span>Stage ${s.stage}${s.isLegendary?" (Legendary)":""}</span>`;
 
     const need = getNextLevelExp(mon.level);
-    const pct = Math.max(0,Math.min(100,Math.round(mon.exp/need*100)));
+    const pctRaw = need>0 ? mon.exp/need : 0;
+    const pct = Math.max(0,Math.min(100,Math.round(pctRaw*100)));
     const xpWrap=document.createElement("div");
     xpWrap.innerHTML = `
       <div class="xp-bar">
         <div class="xp-bar-inner" style="width:${pct}%;"></div>
-        <div class="xp-bar-text">${mon.exp} / ${need}</div>
+        <div class="xp-bar-text">${mon.exp} / ${need}${mon.level>=100?" (MAX LV)":""}</div>
       </div>
     `;
 
@@ -1319,7 +1351,8 @@ function renderBattle(){
   const pPct=Math.max(0,Math.min(100,Math.round(p.hp/pMax*100)));
   const hpColor=pct=>pct<=25?"#f97373":pct<=60?"#facc15":"#4ade80";
   const pNeed=getNextLevelExp(p.level);
-  const pXpPct=Math.max(0,Math.min(100,Math.round(p.exp/pNeed*100)));
+  const pXpRaw=pNeed>0?p.exp/pNeed:0;
+  const pXpPct=Math.max(0,Math.min(100,Math.round(pXpRaw*100)));
 
   let enemyMon, enemySpecies, title, trainerInfoHTML="", ownedVariant=false, legendaryWarning="";
   if(battle.trainer){
@@ -1381,7 +1414,7 @@ function renderBattle(){
             <div class="hp-bar"><div class="hp-bar-inner" style="width:${pPct}%;background:${hpColor(pPct)};"></div><div class="hp-bar-text">${pPct}%</div></div>
             <div class="xp-bar" style="margin-top:6px;">
               <div class="xp-bar-inner" style="width:${pXpPct}%;"></div>
-              <div class="xp-bar-text">${p.exp} / ${pNeed}</div>
+              <div class="xp-bar-text">${p.exp} / ${pNeed}${p.level>=100?" (MAX LV)":""}</div>
             </div>
           </div>
         </div>
@@ -1550,15 +1583,26 @@ function markParticipant(idx){
   }
 }
 
+// EXP & level cap 100
 function addExpToMon(mon, amount) {
   if (!mon || amount <= 0) return;
+
+  // At max level: still record EXP, but no more level ups
+  if (mon.level >= 100) {
+    mon.exp = (mon.exp || 0) + amount;
+    return;
+  }
+
   mon.exp = (mon.exp || 0) + amount;
-  while (mon.exp >= getNextLevelExp(mon.level)) {
+  while (mon.level < 100 && mon.exp >= getNextLevelExp(mon.level)) {
     mon.exp -= getNextLevelExp(mon.level);
     mon.level++;
     mon.hp = getMaxHP(mon);
     logMessage(`${getMonDisplayName(mon)} grew to level ${mon.level}!`);
     checkEvolutionAvailability(mon);
+    if (mon.level >= 100) {
+      break;
+    }
   }
 }
 
@@ -2091,7 +2135,9 @@ function generateTrainerTeamScaled(){
     const off = randomChoice(offsetOptions);
     const base = avg + off;
     const jitter = Math.floor(Math.random()*3)-1;
-    const lvl = Math.max(2, Math.min(80, base + jitter));
+    let lvl = base + jitter;
+    lvl = Math.max(2, lvl);
+    lvl = Math.min(100, lvl);  // trainer mons also never exceed 100
     team.push(createMonsterInstance(species.id, lvl));
   }
   return team;
@@ -2103,7 +2149,8 @@ function generateTrainerTeamChaos(){
   const team=[];
   for(let i=0;i<count;i++){
     const species = randomChoice(pool);
-    const lvl = 2 + Math.floor(Math.random()*79);
+    let lvl = 2 + Math.floor(Math.random()*79); // 2–80 base
+    lvl = Math.min(100, lvl); // clamp just in case
     team.push(createMonsterInstance(species.id, lvl));
   }
   return team;
@@ -2142,15 +2189,17 @@ function explore(){
   if(!party.length){logMessage("You have no monsters in your party.");return;}
   if(Math.random()>=0.75){logMessage("You explore for a while but don't find anything...");return;}
 
+  // Legendary encounter roll
   const legendaryChance = 0.01;
   if (LEGENDARY_IDS.length && Math.random() < legendaryChance) {
-    const avg=Math.max(2,Math.round(party.reduce((sum,m)=>sum+m.level,0)/party.length));
     const speciesId = randomChoice(LEGENDARY_IDS);
     const s = getSpeciesById(speciesId);
-    const minL = Math.max(30, avg + 3);
-    const maxL = minL + 8;
-    const lvl = Math.floor(Math.random()*(maxL-minL+1))+minL;
-    const wild = createMonsterInstance(speciesId, lvl);
+
+    const variantKey = rollVariant();
+    const [minL, maxL] = getWildLevelRangeForVariant(variantKey, true);
+    const lvl = Math.floor(Math.random() * (maxL - minL + 1)) + minL;
+
+    const wild = createMonsterInstance(speciesId, lvl, variantKey);
 
     battle.active=true;
     battle.wild=wild;
@@ -2167,21 +2216,28 @@ function explore(){
     return;
   }
 
+  // Chance for a trainer instead
   const trainerChance = 0.35;
   if(Math.random() < trainerChance){
     startTrainerBattle(true);
     return;
   }
 
+  // Regular wild (Stage 1 only, non-legendary)
   const stage = 1;
   const candidates=MONSTERS.filter(m=>m.stage===stage && !m.isLegendary);
   const s=randomChoice(candidates);
 
-  const avg=Math.max(2,Math.round(party.reduce((sum,m)=>sum+m.level,0)/party.length));
-  const minL=Math.max(2,avg-3),maxL=avg+3;
-  const lvl=Math.floor(Math.random()*(maxL-minL+1))+minL;
-  const wild=createMonsterInstance(s.id,lvl);
-  battle.active=true;battle.wild=wild;battle.trainer=null;battle.trainerIndex=0;battle.playerIndex=getFirstHealthyIndex();
+  const variantKey = rollVariant();
+  const [minL, maxL] = getWildLevelRangeForVariant(variantKey, false);
+  const lvl = Math.floor(Math.random() * (maxL - minL + 1)) + minL;
+
+  const wild=createMonsterInstance(s.id,lvl,variantKey);
+  battle.active=true;
+  battle.wild=wild;
+  battle.trainer=null;
+  battle.trainerIndex=0;
+  battle.playerIndex=getFirstHealthyIndex();
   battle.participants = [];
   markParticipant(battle.playerIndex);
   logMessage(`A wild ${getMonDisplayName(wild)} (Lv ${wild.level}) appeared!`);
