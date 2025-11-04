@@ -416,6 +416,18 @@
       Sort by:
       <button onclick="setStorageSort('dex')">Dex #</button>
       <button onclick="setStorageSort('level')">Level</button>
+      |
+      <button onclick="setStorageSort('totalDesc')">Total Stats ↓</button>
+      <button onclick="setStorageSort('totalAsc')">Total Stats ↑</button>
+      |
+      <button onclick="setStorageSort('hpDesc')">HP ↓</button>
+      <button onclick="setStorageSort('hpAsc')">HP ↑</button>
+      <button onclick="setStorageSort('atkDesc')">Atk ↓</button>
+      <button onclick="setStorageSort('atkAsc')">Atk ↑</button>
+      <button onclick="setStorageSort('defDesc')">Def ↓</button>
+      <button onclick="setStorageSort('defAsc')">Def ↑</button>
+      <button onclick="setStorageSort('spdDesc')">Spd ↓</button>
+      <button onclick="setStorageSort('spdAsc')">Spd ↑</button>
     </p>
     <div id="storage-list"></div>
   </section>
@@ -461,7 +473,7 @@
 </div>
 
 <script>
-const STORAGE_KEY = "miniMonsterRPG_v12_rarity_lv100";
+const STORAGE_KEY = "miniMonsterRPG_v13_active_sortstats";
 
 const VARIANTS = {
   Normal:{name:"Normal",encounterWeight:800,hpMult:1,atkMult:1,defMult:1,spdMult:1,prefix:"",emoji:"",rarityRank:1},
@@ -728,6 +740,9 @@ function getSpeed(mon){
   const base = Math.round((s.baseSpd+mon.level*2)*v.spdMult);
   return base + (mon.spdBonus || 0);
 }
+function getStatTotal(mon){
+  return getMaxHP(mon) + getAttack(mon) + getDefense(mon) + getSpeed(mon);
+}
 
 function getNextLevelExp(l){return 25+l*18;}
 
@@ -735,7 +750,7 @@ function getWildLevelRangeForVariant(variantName, isLegendary){
   if (isLegendary) {
     return [40, 70];
   }
-  switch (variantName) {
+  switch (variantName){
     case "Normal":   return [1, 15];
     case "Shiny":    return [5, 20];
     case "Dark":     return [8, 25];
@@ -751,8 +766,7 @@ function getWildLevelRangeForVariant(variantName, isLegendary){
     case "Gilded":   return [30, 48];
     case "Cosmic":   return [32, 50];
     case "Divine":   return [35, 55];
-    default:
-      return [1, 15];
+    default:         return [1, 15];
   }
 }
 
@@ -913,10 +927,20 @@ function loadGame(){
     migrateInventory(data.inventory);
     if(!data.player.storage)data.player.storage=[];
     if(!data.trainer) data.trainer = { level:1, exp:0 };
+
+    // ensure activeIndex exists and is valid
+    if (data.player.activeIndex == null) data.player.activeIndex = 0;
+    const plen = data.player.party.length;
+    if (plen === 0) {
+      data.player.activeIndex = 0;
+    } else if (data.player.activeIndex < 0 || data.player.activeIndex >= plen) {
+      data.player.activeIndex = 0;
+    }
+
     data.player.party.forEach(m => { ensureMonsterMoves(m); ensureMonBonuses(m); });
     data.player.storage.forEach(m => { ensureMonsterMoves(m); ensureMonBonuses(m); });
     gameState=data;
-    battle={active:false,wild:null,trainer:null,playerIndex:0,trainerIndex:0,participants:[]};
+    battle={active:false,wild:null,trainer:null,playerIndex:gameState.player.activeIndex||0,trainerIndex:0,participants:[]};
     logMessage("Loaded your existing game.");
     renderAll();
   }catch(e){
@@ -927,13 +951,14 @@ function loadGame(){
 
 function newGame(){
   gameState={
-    player:{name:"Player",money:300,party:[],storage:[]},
+    player:{name:"Player",money:300,party:[],storage:[],activeIndex:0},
     trainer:{level:1,exp:0},
     inventory:{potion:5,orbBasic:15,orbGreat:5,orbUltra:1,orbUltimate:0,hpCore:0,atkCore:0,defCore:0,spdCore:0,xpChip:0}
   };
   const starter=createMonsterInstance(1,5,"Normal");
   starter.nickname=getSpecies(starter).name;
   gameState.player.party.push(starter);
+  gameState.player.activeIndex = 0;
   battle={active:false,wild:null,trainer:null,playerIndex:0,trainerIndex:0,participants:[]};
   localStorage.setItem(STORAGE_KEY,JSON.stringify(gameState));
   logMessage("New game started! You received your first monster.");
@@ -1187,7 +1212,7 @@ function renderParty(){
     `;
 
     const buttons=document.createElement("div");
-    if(idx===battle.playerIndex){
+    if(idx===gameState.player.activeIndex){
       const span=document.createElement("span");
       span.className="small-label ok";
       span.textContent="Active";
@@ -1195,7 +1220,13 @@ function renderParty(){
     }else{
       const b=document.createElement("button");
       b.textContent="Set active";
-      b.onclick=()=>{battle.playerIndex=idx;logMessage(`Active: ${getMonDisplayName(mon)}`);renderAll();saveGame();};
+      b.onclick=()=>{
+        gameState.player.activeIndex = idx;
+        battle.playerIndex = idx;
+        logMessage(`Active: ${getMonDisplayName(mon)}`);
+        saveGame();
+        renderAll();
+      };
       buttons.appendChild(b);
     }
     const heal=document.createElement("button");
@@ -1273,18 +1304,58 @@ function renderStorage(){
   const boxRaw=gameState.player.storage;
   if(!boxRaw.length){d.textContent="Storage is empty.";return;}
   const box = boxRaw.slice();
-  if(storageSortMode==="level"){
-    box.sort((a,b)=>{
-      if(b.level!==a.level) return b.level-a.level;
-      return getSpecies(a).id-getSpecies(b).id;
-    });
-  }else{
-    box.sort((a,b)=>{
-      const da=getSpecies(a).id,db=getSpecies(b).id;
-      if(da!==db)return da-db;
-      return b.level-a.level;
-    });
-  }
+
+  box.sort((a,b)=>{
+    const sa=getSpecies(a), sb=getSpecies(b);
+    const dexA = sa.id, dexB = sb.id;
+    const lvlA = a.level, lvlB = b.level;
+    const totalA = getStatTotal(a), totalB = getStatTotal(b);
+    const hpA = getMaxHP(a), hpB = getMaxHP(b);
+    const atkA = getAttack(a), atkB = getAttack(b);
+    const defA = getDefense(a), defB = getDefense(b);
+    const spdA = getSpeed(a), spdB = getSpeed(b);
+
+    switch (storageSortMode){
+      case "level":
+        if(lvlB!==lvlA) return lvlB-lvlA;
+        return dexA-dexB;
+      case "totalDesc":
+        if(totalB!==totalA) return totalB-totalA;
+        return dexA-dexB;
+      case "totalAsc":
+        if(totalA!==totalB) return totalA-totalB;
+        return dexA-dexB;
+      case "hpDesc":
+        if(hpB!==hpA) return hpB-hpA;
+        return dexA-dexB;
+      case "hpAsc":
+        if(hpA!==hpB) return hpA-hpB;
+        return dexA-dexB;
+      case "atkDesc":
+        if(atkB!==atkA) return atkB-atkA;
+        return dexA-dexB;
+      case "atkAsc":
+        if(atkA!==atkB) return atkA-atkB;
+        return dexA-dexB;
+      case "defDesc":
+        if(defB!==defA) return defB-defA;
+        return dexA-dexB;
+      case "defAsc":
+        if(defA!==defB) return defA-defB;
+        return dexA-dexB;
+      case "spdDesc":
+        if(spdB!==spdA) return spdB-spdA;
+        return dexA-dexB;
+      case "spdAsc":
+        if(spdA!==spdB) return spdA-spdB;
+        return dexA-dexB;
+      case "dex":
+      default:
+        if(dexA!==dexB) return dexA-dexB;
+        return lvlB-lvlA;
+    }
+  });
+
   box.forEach((mon)=>{
     const s=getSpecies(mon),max=getMaxHP(mon),v=getVariant(mon);
     const atk=getAttack(mon),def=getDefense(mon),spd=getSpeed(mon);
@@ -1311,7 +1382,7 @@ function renderStorage(){
 
     const stats=document.createElement("div");
     stats.className="small-label";
-    stats.textContent=`Stats: Atk ${atk}   Def ${def}   Spd ${spd}`;
+    stats.textContent=`Stats: Atk ${atk}   Def ${def}   Spd ${spd}   (Total ${getStatTotal(mon)})`;
 
     const need = getNextLevelExp(mon.level);
     const pctRaw = need>0 ? mon.exp/need : 0;
@@ -1550,8 +1621,16 @@ function renderAll(){
 function getActiveMon(){
   const party=gameState.player.party;
   if(!party.length)return null;
-  if(battle.playerIndex<0||battle.playerIndex>=party.length)battle.playerIndex=0;
-  return party[battle.playerIndex];
+
+  if (battle.active){
+    if(battle.playerIndex<0||battle.playerIndex>=party.length) battle.playerIndex=0;
+    return party[battle.playerIndex];
+  }
+
+  let idx = gameState.player.activeIndex ?? 0;
+  if (idx<0 || idx>=party.length) idx=0;
+  gameState.player.activeIndex = idx;
+  return party[idx];
 }
 
 function getFirstHealthyIndex(){
@@ -1682,6 +1761,7 @@ function handlePlayerMonFainted(){
   if(ni===-1)endBattleLose();
   else{
     battle.playerIndex=ni;
+    gameState.player.activeIndex = ni;
     markParticipant(ni);
     logMessage(`You send out ${getMonDisplayName(getActiveMon())}!`);
   }
@@ -1714,6 +1794,7 @@ function useMove(idx){
     if(ni===-1)endBattleLose();
     else{
       battle.playerIndex=ni;
+      gameState.player.activeIndex = ni;
       markParticipant(ni);
       logMessage(`You send out ${getMonDisplayName(getActiveMon())}!`);
       renderAll();
@@ -1806,6 +1887,7 @@ function switchActive(idx){
     return;
   }
   battle.playerIndex = idx;
+  gameState.player.activeIndex = idx;
   markParticipant(idx);
   logMessage(`You switched to ${getMonDisplayName(mon)}.`);
 
@@ -2061,7 +2143,10 @@ function movePartyToStorage(idx){
   const [mon]=party.splice(idx,1);
   gameState.player.storage.push(mon);
   logMessage(`Sent ${getMonDisplayName(mon)} to storage.`);
+
   if(battle.playerIndex>=party.length)battle.playerIndex=0;
+  if(gameState.player.activeIndex>=party.length)gameState.player.activeIndex=0;
+
   saveGame();renderAll();
 }
 
@@ -2076,7 +2161,16 @@ function moveStorageToParty(idx){
 }
 
 function setStorageSort(mode){
-  storageSortMode = mode==="level" ? "level" : "dex";
+  const allowed = [
+    "dex","level",
+    "totalDesc","totalAsc",
+    "hpDesc","hpAsc",
+    "atkDesc","atkAsc",
+    "defDesc","defAsc",
+    "spdDesc","spdAsc"
+  ];
+  if(!allowed.includes(mode)) mode="dex";
+  storageSortMode = mode;
   renderStorage();
   refreshAllIcons();
 }
@@ -2159,13 +2253,20 @@ function startTrainerBattle(scaled){
   }
   const name = randomChoice(TRAINER_NAMES);
   const team = scaled ? generateTrainerTeamScaled() : generateTrainerTeamChaos();
+
+  let startIdx = gameState.player.activeIndex ?? 0;
+  if(startIdx<0 || startIdx>=party.length || party[startIdx].hp<=0){
+    startIdx = healthyIndex;
+  }
+
   battle.active=true;
   battle.trainer={name, team};
   battle.trainerIndex=0;
   battle.wild=null;
-  battle.playerIndex=healthyIndex;
+  battle.playerIndex=startIdx;
   battle.participants = [];
-  markParticipant(healthyIndex);
+  markParticipant(startIdx);
+
   logMessage(`Trainer ${name} challenges you to a battle!`);
   const firstMon = team[0];
   logMessage(`${name} sends out ${getMonDisplayName(firstMon)} (Lv ${firstMon.level})!`);
@@ -2176,6 +2277,9 @@ function explore(){
   if(battle.active){logMessage("You are already in a battle!");return;}
   const party=gameState.player.party;
   if(!party.length){logMessage("You have no monsters in your party.");return;}
+  const healthyIndex=getFirstHealthyIndex();
+  if(healthyIndex===-1){logMessage("All of your monsters have fainted!");return;}
+
   if(Math.random()>=0.75){logMessage("You explore for a while but don't find anything...");return;}
 
   const legendaryChance = 0.01;
@@ -2189,13 +2293,18 @@ function explore(){
 
     const wild = createMonsterInstance(speciesId, lvl, variantKey);
 
+    let startIdx = gameState.player.activeIndex ?? 0;
+    if(startIdx<0 || startIdx>=party.length || party[startIdx].hp<=0){
+      startIdx = healthyIndex;
+    }
+
     battle.active=true;
     battle.wild=wild;
     battle.trainer=null;
     battle.trainerIndex=0;
-    battle.playerIndex=getFirstHealthyIndex();
+    battle.playerIndex=startIdx;
     battle.participants = [];
-    markParticipant(battle.playerIndex);
+    markParticipant(startIdx);
 
     logMessage("✨ LEGENDARY ENCOUNTER! ✨");
     logMessage(`The air trembles... ${getMonDisplayName(wild)} (Lv ${wild.level}) appears!`);
@@ -2219,13 +2328,19 @@ function explore(){
   const lvl = Math.floor(Math.random() * (maxL - minL + 1)) + minL;
 
   const wild=createMonsterInstance(s.id,lvl,variantKey);
+
+  let startIdx = gameState.player.activeIndex ?? 0;
+  if(startIdx<0 || startIdx>=party.length || party[startIdx].hp<=0){
+    startIdx = healthyIndex;
+  }
+
   battle.active=true;
   battle.wild=wild;
   battle.trainer=null;
   battle.trainerIndex=0;
-  battle.playerIndex=getFirstHealthyIndex();
+  battle.playerIndex=startIdx;
   battle.participants = [];
-  markParticipant(battle.playerIndex);
+  markParticipant(startIdx);
   logMessage(`A wild ${getMonDisplayName(wild)} (Lv ${wild.level}) appeared!`);
   saveGame();renderAll();
 }
