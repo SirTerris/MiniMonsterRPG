@@ -463,7 +463,6 @@
 <script>
 const STORAGE_KEY = "miniMonsterRPG_v12_rarity_lv100";
 
-// ---- Variants ----
 const VARIANTS = {
   Normal:{name:"Normal",encounterWeight:800,hpMult:1,atkMult:1,defMult:1,spdMult:1,prefix:"",emoji:"",rarityRank:1},
   Shiny:{name:"Shiny",encounterWeight:160,hpMult:1.05,atkMult:1.05,defMult:1.05,spdMult:1.05,prefix:"★ ",emoji:"✨",rarityRank:2},
@@ -483,7 +482,6 @@ const VARIANTS = {
 };
 const VARIANT_KEYS = Object.keys(VARIANTS);
 
-// ---- Moves & type move sets ----
 const MOVES = {
   tackle:{id:"tackle",name:"Tackle",power:40,accuracy:0.95},
   hit1:{id:"hit1",name:"Strike",power:45,accuracy:0.95},
@@ -523,7 +521,6 @@ const TYPE_MOVE_SETS = {
   Air:["gust","airslash","windburst"]
 };
 
-// ---- Species generation ----
 const MONSTERS = [];
 (function(){
   const TOTAL_CHAINS=500;
@@ -648,7 +645,6 @@ const MONSTERS = [];
   }
 })();
 
-// ---- Add legendaries ----
 const LEGENDARY_IDS = [];
 (function addLegendaries() {
   const legData = {
@@ -691,13 +687,11 @@ const LEGENDARY_IDS = [];
   });
 })();
 
-// ---- Game state ----
 let gameState=null;
 let battle={active:false,wild:null,trainer:null,playerIndex:0,trainerIndex:0,participants:[]};
 let currentSection="explore";
 let storageSortMode="dex";
 
-// ---- Helpers ----
 function getSpeciesById(id){return MONSTERS.find(m=>m.id===id);}
 function getSpecies(mon){return getSpeciesById(mon.speciesId);}
 function randomChoice(arr){return arr[Math.floor(Math.random()*arr.length)];}
@@ -737,10 +731,8 @@ function getSpeed(mon){
 
 function getNextLevelExp(l){return 25+l*18;}
 
-// Rarity-based wild level ranges
 function getWildLevelRangeForVariant(variantName, isLegendary){
   if (isLegendary) {
-    // Legendaries are always high-level regardless of your team
     return [40, 70];
   }
   switch (variantName) {
@@ -764,7 +756,6 @@ function getWildLevelRangeForVariant(variantName, isLegendary){
   }
 }
 
-// Trainer EXP (no cap)
 function getTrainerNextLevelExp(level){
   return 120 + level * 80;
 }
@@ -787,7 +778,6 @@ function addTrainerExp(amount){
 }
 
 function createMonsterInstance(speciesId,level,variantKey){
-  // Clamp spawn level between 1 and 100
   level = Math.max(1, Math.min(level || 1, 100));
   const variant=variantKey||rollVariant();
   const s=getSpeciesById(speciesId);
@@ -832,7 +822,6 @@ function logMessage(t){
   d.scrollTop=d.scrollHeight;
 }
 
-// Dex helpers
 function hasCurrentVariant(speciesId, variantKey){
   const v = variantKey || "Normal";
   const p = gameState.player.party;
@@ -859,7 +848,6 @@ function buildCurrentDexSnapshot(){
   return dex;
 }
 
-// ---- Save / load ----
 function migrateInventory(inv){
   if(inv.orbBasic===undefined){
     inv.orbBasic=inv.orb||15;
@@ -961,7 +949,6 @@ function resetGame(){
   newGame();
 }
 
-// ---- Icon rendering ----
 function getTypeBaseHue(type){
   switch(type){
     case "Fire": return 18;
@@ -1115,7 +1102,6 @@ function refreshAllIcons(){
   });
 }
 
-// ---- Rendering ----
 function renderStatusBar(){
   const m=document.getElementById("status-money");
   const o=document.getElementById("status-orbs");
@@ -1152,6 +1138,10 @@ function renderParty(){
   if(!party.length){d.textContent="You have no monsters in your party.";return;}
   party.forEach((mon,idx)=>{
     const s=getSpecies(mon),max=getMaxHP(mon),v=getVariant(mon);
+    const atk = getAttack(mon);
+    const def = getDefense(mon);
+    const spd = getSpeed(mon);
+
     const outer=document.createElement("div");outer.className="party-mon";
     const inner=document.createElement("div");inner.className="party-mon-inner";
 
@@ -1180,6 +1170,10 @@ function renderParty(){
     const moves=document.createElement("div");
     moves.className="small-label";
     moves.textContent="Moves: "+mon.moves.map(id=>MOVES[id].name).join(", ");
+
+    const stats = document.createElement("div");
+    stats.className = "small-label";
+    stats.textContent = `Stats: Atk ${atk}   Def ${def}   Spd ${spd}`;
 
     const need = getNextLevelExp(mon.level);
     const pctRaw = need>0 ? mon.exp/need : 0;
@@ -1262,6 +1256,7 @@ function renderParty(){
     right.appendChild(header);
     right.appendChild(sub);
     right.appendChild(moves);
+    right.appendChild(stats);
     right.appendChild(xpWrap);
     right.appendChild(buttons);
 
@@ -1292,6 +1287,7 @@ function renderStorage(){
   }
   box.forEach((mon)=>{
     const s=getSpecies(mon),max=getMaxHP(mon),v=getVariant(mon);
+    const atk=getAttack(mon),def=getDefense(mon),spd=getSpeed(mon);
     const realIdx = boxRaw.indexOf(mon);
     const outer=document.createElement("div");outer.className="storage-mon";
     const inner=document.createElement("div");inner.className="storage-mon-inner";
@@ -1313,6 +1309,10 @@ function renderStorage(){
     sub.className="storage-mon-sub";
     sub.innerHTML=`<span>Variant: ${v.name}${v.emoji?" "+v.emoji:""}</span><span>Stage ${s.stage}${s.isLegendary?" (Legendary)":""}</span>`;
 
+    const stats=document.createElement("div");
+    stats.className="small-label";
+    stats.textContent=`Stats: Atk ${atk}   Def ${def}   Spd ${spd}`;
+
     const need = getNextLevelExp(mon.level);
     const pctRaw = need>0 ? mon.exp/need : 0;
     const pct = Math.max(0,Math.min(100,Math.round(pctRaw*100)));
@@ -1332,6 +1332,7 @@ function renderStorage(){
 
     right.appendChild(header);
     right.appendChild(sub);
+    right.appendChild(stats);
     right.appendChild(xpWrap);
     right.appendChild(buttons);
     inner.appendChild(canvas);
@@ -1546,7 +1547,6 @@ function renderAll(){
   showSection(currentSection);
 }
 
-// ---- Battle / leveling ----
 function getActiveMon(){
   const party=gameState.player.party;
   if(!party.length)return null;
@@ -1583,11 +1583,9 @@ function markParticipant(idx){
   }
 }
 
-// EXP & level cap 100
 function addExpToMon(mon, amount) {
   if (!mon || amount <= 0) return;
 
-  // At max level: still record EXP, but no more level ups
   if (mon.level >= 100) {
     mon.exp = (mon.exp || 0) + amount;
     return;
@@ -1794,7 +1792,6 @@ function tryRun(){
   }
 }
 
-// Switch active mid-battle
 function switchActive(idx){
   if(!battle.active || (!battle.wild && !battle.trainer))return;
   const party = gameState.player.party;
@@ -1827,7 +1824,6 @@ function switchActive(idx){
   saveGame();renderAll();
 }
 
-// Training (click)
 function trainActive() {
   const mon = getActiveMon();
   if (!mon) {
@@ -1842,7 +1838,7 @@ function trainActive() {
   const trainer = gameState.trainer || { level: 1, exp: 0 };
 
   const baseGain = 3 + Math.floor(mon.level / 5);
-  const trainerBonus = trainer.level;  // +1 EXP per Trainer level
+  const trainerBonus = trainer.level;
   const gain = baseGain + trainerBonus;
 
   addExpToMon(mon, gain);
@@ -1855,7 +1851,6 @@ function trainActive() {
   renderAll();
 }
 
-// Manual evolution
 function evolveFromParty(idx){
   const party = gameState.player.party;
   if(idx<0 || idx>=party.length) return;
@@ -1881,7 +1876,6 @@ function evolveFromParty(idx){
   renderAll();
 }
 
-// Orbs & items
 function addCaughtMonster(mon){
   ensureMonsterMoves(mon);
   ensureMonBonuses(mon);
@@ -2001,7 +1995,6 @@ function healMonsterFromParty(idx){
   saveGame();renderAll();
 }
 
-// Stat & XP items
 function useStatCore(stat, partyIndex) {
   const inv = gameState.inventory;
   const mon = gameState.player.party[partyIndex];
@@ -2043,7 +2036,6 @@ function useXpChip(partyIndex) {
   renderAll();
 }
 
-// Item drops
 function tryDropItem(isTrainer) {
   const dropChance = isTrainer ? 0.4 : 0.2;
   if (Math.random() >= dropChance) return;
@@ -2063,7 +2055,6 @@ function tryDropItem(isTrainer) {
   logMessage(`You found a ${names[key]}!`);
 }
 
-// Storage
 function movePartyToStorage(idx){
   const party=gameState.player.party;
   if(idx<0||idx>=party.length)return;
@@ -2090,7 +2081,6 @@ function setStorageSort(mode){
   refreshAllIcons();
 }
 
-// Trainers
 const TRAINER_NAMES = [
   "Rival Ken","Scout Mia","Ace Rowan","Tamer Sol","Ranger Kira",
   "Handler Jax","Mystic Lyra","Veteran Cole","Leader Nia","Trainer Ashen"
@@ -2137,7 +2127,7 @@ function generateTrainerTeamScaled(){
     const jitter = Math.floor(Math.random()*3)-1;
     let lvl = base + jitter;
     lvl = Math.max(2, lvl);
-    lvl = Math.min(100, lvl);  // trainer mons also never exceed 100
+    lvl = Math.min(100, lvl);
     team.push(createMonsterInstance(species.id, lvl));
   }
   return team;
@@ -2149,8 +2139,8 @@ function generateTrainerTeamChaos(){
   const team=[];
   for(let i=0;i<count;i++){
     const species = randomChoice(pool);
-    let lvl = 2 + Math.floor(Math.random()*79); // 2–80 base
-    lvl = Math.min(100, lvl); // clamp just in case
+    let lvl = 2 + Math.floor(Math.random()*79);
+    lvl = Math.min(100, lvl);
     team.push(createMonsterInstance(species.id, lvl));
   }
   return team;
@@ -2182,14 +2172,12 @@ function startTrainerBattle(scaled){
   saveGame();renderAll();
 }
 
-// Explore
 function explore(){
   if(battle.active){logMessage("You are already in a battle!");return;}
   const party=gameState.player.party;
   if(!party.length){logMessage("You have no monsters in your party.");return;}
   if(Math.random()>=0.75){logMessage("You explore for a while but don't find anything...");return;}
 
-  // Legendary encounter roll
   const legendaryChance = 0.01;
   if (LEGENDARY_IDS.length && Math.random() < legendaryChance) {
     const speciesId = randomChoice(LEGENDARY_IDS);
@@ -2216,14 +2204,12 @@ function explore(){
     return;
   }
 
-  // Chance for a trainer instead
   const trainerChance = 0.35;
   if(Math.random() < trainerChance){
     startTrainerBattle(true);
     return;
   }
 
-  // Regular wild (Stage 1 only, non-legendary)
   const stage = 1;
   const candidates=MONSTERS.filter(m=>m.stage===stage && !m.isLegendary);
   const s=randomChoice(candidates);
@@ -2248,7 +2234,6 @@ function battleRandomTrainerChaos(){
   startTrainerBattle(false);
 }
 
-// Shop
 function buyItem(type){
   let cost;
   if(type==="potion")cost=50;
@@ -2267,7 +2252,6 @@ function buyItem(type){
   saveGame();renderAll();
 }
 
-// Expose to window
 window.buyItem=buyItem;
 window.useMove=useMove;
 window.usePotionInBattle=usePotionInBattle;
