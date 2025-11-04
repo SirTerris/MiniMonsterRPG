@@ -1,0 +1,2239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Mini Monster RPG – Trainer Levels</title>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      background: #020617;
+      color: #e5e7eb;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+    }
+    #game {
+      max-width: 1100px;
+      width: 100%;
+      padding: 16px;
+      box-sizing: border-box;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    header h1 {
+      font-size: 1.4rem;
+      margin: 0;
+    }
+    #status-bar {
+      font-size: 0.9rem;
+      margin-bottom: 8px;
+    }
+    #status-bar span { margin-right: 12px; }
+
+    #nav { margin-bottom: 8px; }
+    #nav button {
+      margin-right: 6px;
+      margin-bottom: 4px;
+      padding: 6px 10px;
+      border-radius: 6px;
+      border: none;
+      background: #1f2937;
+      color: #e5e7eb;
+      cursor: pointer;
+    }
+    #nav button.active { background: #4b5563; }
+
+    section {
+      border-radius: 8px;
+      background: #020617;
+      padding: 10px;
+      margin-bottom: 8px;
+      border: 1px solid #111827;
+    }
+    #battle-section {
+      border-radius: 8px;
+      background: #020617;
+      padding: 10px;
+      margin-bottom: 8px;
+      border: 1px solid #4b5563;
+    }
+
+    .battle-header {
+      font-weight: bold;
+      margin-bottom: 4px;
+    }
+    .battle-mon-container {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+    }
+    .battle-mon {
+      flex: 1 1 260px;
+      background: #020617;
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid #374151;
+    }
+    .battle-mon-inner {
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+    }
+    .battle-mon h3 {
+      margin: 0 0 4px 0;
+      font-size: 1rem;
+    }
+
+    .variant-badge {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      margin-left: 4px;
+    }
+    .variant-Normal { background:#1f2937; color:#e5e7eb; }
+    .variant-Shiny { background:#facc15; color:#111827; }
+    .variant-Dark { background:#111827; color:#f9fafb; }
+    .variant-Metallic { background:#9ca3af; color:#020617; }
+    .variant-Mystic { background:#a855f7; color:#f9fafb; }
+    .variant-Crystal { background:#22c1c3; color:#020617; }
+    .variant-Shadow { background:#020617; color:#e5e7eb; border:1px solid #4b5563; }
+    .variant-Radiant { background:#fde68a; color:#92400e; }
+    .variant-Void { background:#000; color:#f9fafb; }
+    .variant-Neon { background:#22c55e; color:#022c22; }
+    .variant-Pastel { background:#f9a8d4; color:#4a044e; }
+    .variant-Toxic { background:#84cc16; color:#022c22; }
+    .variant-Gilded { background:#eab308; color:#451a03; }
+    .variant-Cosmic { background:#4f46e5; color:#e0f2fe; }
+    .variant-Divine { background:#fef3c7; color:#7c2d12; }
+
+    .legendary-tag {
+      display: inline-block;
+      margin-left: 6px;
+      padding: 2px 6px;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      background: #facc15;
+      color: #451a03;
+      border: 1px solid #fbbf24;
+    }
+
+    .hp-bar {
+      position: relative;
+      background: #020617;
+      border-radius: 4px;
+      height: 14px;
+      margin-top: 4px;
+      overflow: hidden;
+      border: 1px solid #4b5563;
+    }
+    .hp-bar-inner { height: 100%; }
+    .hp-bar-text {
+      position: absolute;
+      top: 0; left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.7rem;
+    }
+    .xp-bar {
+      position: relative;
+      background: #020617;
+      border-radius: 4px;
+      height: 8px;
+      margin-top: 2px;
+      overflow: hidden;
+      border: 1px solid #1d4ed8;
+    }
+    .xp-bar-inner { height: 100%; background: #3b82f6; }
+    .xp-bar-text {
+      position: absolute;
+      top: -12px;
+      right: 0;
+      font-size: 0.7rem;
+      color: #93c5fd;
+    }
+
+    .battle-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .moves { flex: 2 1 260px; }
+    .moves button {
+      display: inline-block;
+      margin: 2px;
+      padding: 6px 8px;
+      font-size: 0.9rem;
+      border-radius: 6px;
+      border: none;
+      background: #1f2937;
+      color: #e5e7eb;
+      cursor: pointer;
+    }
+    .side-actions {
+      flex: 1 1 220px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .side-actions button {
+      padding: 6px 8px;
+      border-radius: 6px;
+      border: none;
+      background: #374151;
+      color: #e5e7eb;
+      cursor: pointer;
+      font-size: 0.85rem;
+      text-align: left;
+    }
+    .side-note {
+      font-size: 0.75rem;
+      color: #facc15;
+      margin-top: 4px;
+    }
+    .switch-list {
+      margin-top: 4px;
+      border-top: 1px solid #111827;
+      padding-top: 4px;
+    }
+    .switch-list button {
+      margin: 1px 0;
+      padding: 3px 6px;
+      font-size: 0.8rem;
+      border-radius: 4px;
+      border: none;
+      background: #111827;
+      color: #e5e7eb;
+      cursor: pointer;
+      width: 100%;
+      text-align: left;
+    }
+
+    #explore-section button,
+    #shop-section button,
+    .party-mon button,
+    .storage-mon button {
+      padding: 4px 8px;
+      border-radius: 6px;
+      border: none;
+      background: #1f2937;
+      color: #e5e7eb;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+
+    .party-mon,
+    .storage-mon {
+      border: 1px solid #374151;
+      border-radius: 6px;
+      padding: 6px;
+      margin-bottom: 6px;
+      background: #020617;
+    }
+    .party-mon-inner,
+    .storage-mon-inner {
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+    }
+    .party-mon-header,
+    .storage-mon-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: bold;
+      margin-bottom: 4px;
+      font-size: 0.95rem;
+    }
+    .party-mon-sub,
+    .storage-mon-sub {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      margin-bottom: 4px;
+      color: #9ca3af;
+    }
+
+    #log {
+      max-height: 260px;
+      overflow-y: auto;
+      font-size: 0.85rem;
+      border-radius: 8px;
+      background: #020617;
+      padding: 8px;
+      border: 1px solid #4b5563;
+    }
+    .log-line { margin-bottom: 2px; }
+
+    .small-label {
+      font-size: 0.8rem;
+      color: #9ca3af;
+    }
+    .ok { color: #6ee7b7; }
+
+    .mon-canvas {
+      width: 64px;
+      height: 64px;
+      border-radius: 6px;
+      background: #020617;
+      border: 1px solid #111827;
+      flex-shrink: 0;
+    }
+    .dex-canvas {
+      width: 40px;
+      height: 40px;
+      border-radius: 4px;
+      background: #020617;
+      border: 1px solid #111827;
+      margin-right: 6px;
+      flex-shrink: 0;
+    }
+
+    .dex-entry {
+      border-bottom: 1px solid #111827;
+      padding: 6px 0;
+    }
+    .dex-header-line {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.9rem;
+      margin-bottom: 4px;
+      gap: 8px;
+    }
+    .dex-header-left {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
+    }
+    .dex-variants {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      font-size: 0.7rem;
+    }
+    .dex-variant {
+      border-radius: 999px;
+      padding: 2px 6px;
+      border: 1px solid #374151;
+      background: #020617;
+    }
+    .dex-status-none { opacity: 0.4; }
+    .dex-status-owned { border-color: #22c55e; }
+
+    .caught-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 6px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      border: 1px solid #374151;
+      background: #020617;
+    }
+    .caught-pill.owned {
+      border-color: #22c55e;
+      color: #bbf7d0;
+    }
+  </style>
+</head>
+<body>
+<div id="game">
+  <header>
+    <h1>Mini Monster RPG</h1>
+    <button id="reset-btn">Reset Game</button>
+  </header>
+
+  <div id="status-bar">
+    <span id="status-money"></span>
+    <span id="status-orbs"></span>
+    <span id="status-potions"></span>
+    <span id="status-trainer"></span>
+  </div>
+
+  <div id="battle-section" style="display:none;"></div>
+
+  <div id="nav">
+    <button data-section="explore" class="active">Explore</button>
+    <button data-section="train">Train</button>
+    <button data-section="party">Party</button>
+    <button data-section="storage">Storage</button>
+    <button data-section="bag">Bag</button>
+    <button data-section="shop">Shop</button>
+    <button data-section="dex">Dex</button>
+  </div>
+
+  <section id="explore-section">
+    <h2>Explore</h2>
+    <p>
+      Search the area for wild basic-form monsters (Stage 1 only), or occasionally run into trainers.
+      Very rarely, a <strong>legendary</strong> will appear.
+      To evolve monsters, level them in battle, then manually evolve them in the Party screen.
+    </p>
+    <button id="explore-btn">Explore the wilds</button>
+    <button id="random-trainer-btn">Battle random trainer (chaos)</button>
+    <p class="small-label">
+      There are 1500+ species including 30 legendaries. Variants get rarer down the list (Normal → Shiny → ... → Divine).
+    </p>
+  </section>
+
+  <section id="train-section" style="display:none;">
+    <h2>Training Ground</h2>
+    <p class="small-label">
+      Click training gives a small amount of EXP to your active monster.
+      It’s slower than battling, but completely safe.
+      The higher your <strong>Trainer Level</strong>, the more EXP each training click gives.
+    </p>
+    <button onclick="trainActive()">Train active monster</button>
+  </section>
+
+  <section id="party-section" style="display:none;">
+    <h2>Your Party</h2>
+    <div id="party-list"></div>
+    <p class="small-label">
+      Max party size is 6. When a monster reaches its evolution level, it can evolve
+      manually via the <strong>Evolve</strong> button shown here.
+      Extras go to storage. You can send monsters to the Storage Box from here.
+      Stat items (Cores, XP Chips) can be used from here too.
+    </p>
+  </section>
+
+  <section id="storage-section" style="display:none;">
+    <h2>Storage Box</h2>
+    <p class="small-label">
+      Swap monsters between your party and storage. Party max: 6. If your party is empty, you can't battle.
+    </p>
+    <p class="small-label">
+      Sort by:
+      <button onclick="setStorageSort('dex')">Dex #</button>
+      <button onclick="setStorageSort('level')">Level</button>
+    </p>
+    <div id="storage-list"></div>
+  </section>
+
+  <section id="bag-section" style="display:none;">
+    <h2>Bag</h2>
+    <p><strong>Potions:</strong> <span id="bag-potions"></span> (heals 20 HP)</p>
+    <p><strong>Basic Orbs:</strong> <span id="bag-orb-basic"></span></p>
+    <p><strong>Great Orbs:</strong> <span id="bag-orb-great"></span></p>
+    <p><strong>Ultra Orbs:</strong> <span id="bag-orb-ultra"></span></p>
+    <p><strong>Ultimate Orbs (guaranteed catch):</strong> <span id="bag-orb-ultimate"></span></p>
+    <hr>
+    <p><strong>HP Core:</strong> <span id="bag-hp-core"></span> (+5 max HP)</p>
+    <p><strong>Attack Core:</strong> <span id="bag-atk-core"></span> (+2 Attack)</p>
+    <p><strong>Defense Core:</strong> <span id="bag-def-core"></span> (+2 Defense)</p>
+    <p><strong>Speed Core:</strong> <span id="bag-spd-core"></span> (+2 Speed)</p>
+    <p><strong>XP Chip:</strong> <span id="bag-xp-chip"></span> (small EXP boost)</p>
+  </section>
+
+  <section id="shop-section" style="display:none;">
+    <h2>Shop</h2>
+    <p>Spend your money on useful items.</p>
+    <p>Potion – <strong>50</strong> coins <button onclick="buyItem('potion')">Buy</button></p>
+    <p>Basic Orb – <strong>100</strong> coins <button onclick="buyItem('orbBasic')">Buy</button></p>
+    <p>Great Orb – <strong>300</strong> coins <button onclick="buyItem('orbGreat')">Buy</button></p>
+    <p>Ultra Orb – <strong>800</strong> coins <button onclick="buyItem('orbUltra')">Buy</button></p>
+    <p>Ultimate Orb (guaranteed catch) – <strong>5000</strong> coins <button onclick="buyItem('orbUltimate')">Buy</button></p>
+  </section>
+
+  <section id="dex-section" style="display:none;">
+    <h2>Dex</h2>
+    <p class="small-label" id="dex-summary"></p>
+    <p class="small-label">
+      Shows what you <strong>currently own</strong> (party + storage). No history.
+      Key: — not owned, ✔ owned at least once right now.
+      Legendaries are highlighted.
+    </p>
+    <div id="dex-list"></div>
+  </section>
+
+  <h2>Messages</h2>
+  <div id="log"></div>
+</div>
+
+<script>
+const STORAGE_KEY = "miniMonsterRPG_v11_trainer_levels";
+
+// ---- Variants ----
+const VARIANTS = {
+  Normal:{name:"Normal",encounterWeight:800,hpMult:1,atkMult:1,defMult:1,spdMult:1,prefix:"",emoji:"",rarityRank:1},
+  Shiny:{name:"Shiny",encounterWeight:160,hpMult:1.05,atkMult:1.05,defMult:1.05,spdMult:1.05,prefix:"★ ",emoji:"✨",rarityRank:2},
+  Dark:{name:"Dark",encounterWeight:120,hpMult:1.05,atkMult:1.08,defMult:1.02,spdMult:1,prefix:"☾ ",emoji:"",rarityRank:3},
+  Metallic:{name:"Metallic",encounterWeight:96,hpMult:1.05,atkMult:1,defMult:1.1,spdMult:.98,prefix:"◇ ",emoji:"",rarityRank:4},
+  Mystic:{name:"Mystic",encounterWeight:72,hpMult:1.03,atkMult:1.03,defMult:1.03,spdMult:1.07,prefix:"✦ ",emoji:"",rarityRank:5},
+  Crystal:{name:"Crystal",encounterWeight:54,hpMult:1.08,atkMult:1.02,defMult:1.08,spdMult:1,prefix:"❖ ",emoji:"",rarityRank:6},
+  Shadow:{name:"Shadow",encounterWeight:40,hpMult:1.02,atkMult:1.1,defMult:1.02,spdMult:1.05,prefix:"☠ ",emoji:"",rarityRank:7},
+  Radiant:{name:"Radiant",encounterWeight:30,hpMult:1.06,atkMult:1.06,defMult:1.06,spdMult:1.06,prefix:"☼ ",emoji:"",rarityRank:8},
+  Void:{name:"Void",encounterWeight:22,hpMult:1.04,atkMult:1.12,defMult:1.04,spdMult:1.08,prefix:"⊘ ",emoji:"",rarityRank:9},
+  Neon:{name:"Neon",encounterWeight:16,hpMult:1.03,atkMult:1.09,defMult:1.03,spdMult:1.12,prefix:"¤ ",emoji:"",rarityRank:10},
+  Pastel:{name:"Pastel",encounterWeight:12,hpMult:1.09,atkMult:1.03,defMult:1.09,spdMult:1.03,prefix:"♡ ",emoji:"",rarityRank:11},
+  Toxic:{name:"Toxic",encounterWeight:9,hpMult:1.05,atkMult:1.13,defMult:1.05,spdMult:1.05,prefix:"☣ ",emoji:"",rarityRank:12},
+  Gilded:{name:"Gilded",encounterWeight:6,hpMult:1.12,atkMult:1.08,defMult:1.12,spdMult:1.04,prefix:"⚜ ",emoji:"",rarityRank:13},
+  Cosmic:{name:"Cosmic",encounterWeight:4,hpMult:1.1,atkMult:1.12,defMult:1.1,spdMult:1.1,prefix:"✺ ",emoji:"",rarityRank:14},
+  Divine:{name:"Divine",encounterWeight:2,hpMult:1.15,atkMult:1.15,defMult:1.15,spdMult:1.15,prefix:"✙ ",emoji:"⭐",rarityRank:15}
+};
+const VARIANT_KEYS = Object.keys(VARIANTS);
+
+// ---- Moves & type move sets ----
+const MOVES = {
+  tackle:{id:"tackle",name:"Tackle",power:40,accuracy:0.95},
+  hit1:{id:"hit1",name:"Strike",power:45,accuracy:0.95},
+  hit2:{id:"hit2",name:"Power Hit",power:60,accuracy:0.9},
+
+  ember:{id:"ember",name:"Ember",power:40,accuracy:0.95},
+  flameclaw:{id:"flameclaw",name:"Flame Claw",power:55,accuracy:0.95},
+  fireblast:{id:"fireblast",name:"Fire Blast",power:80,accuracy:0.85},
+
+  watergun:{id:"watergun",name:"Water Gun",power:40,accuracy:0.95},
+  bubblejet:{id:"bubblejet",name:"Bubble Jet",power:55,accuracy:0.95},
+  wavecrash:{id:"wavecrash",name:"Wave Crash",power:80,accuracy:0.85},
+
+  leafblade:{id:"leafblade",name:"Leaf Blade",power:45,accuracy:0.95},
+  thornwhip:{id:"thornwhip",name:"Thorn Whip",power:60,accuracy:0.9},
+  sporecloud:{id:"sporecloud",name:"Spore Cloud",power:35,accuracy:0.95},
+
+  spark:{id:"spark",name:"Spark",power:40,accuracy:0.95},
+  thunderbolt:{id:"thunderbolt",name:"Thunderbolt",power:75,accuracy:0.9},
+  voltcrash:{id:"voltcrash",name:"Volt Crash",power:90,accuracy:0.85},
+
+  rockthrow:{id:"rockthrow",name:"Rock Throw",power:50,accuracy:0.95},
+  mudslam:{id:"mudslam",name:"Mud Slam",power:60,accuracy:0.9},
+  quake:{id:"quake",name:"Quake",power:85,accuracy:0.85},
+
+  gust:{id:"gust",name:"Gust",power:40,accuracy:0.95},
+  airslash:{id:"airslash",name:"Air Slash",power:55,accuracy:0.95},
+  windburst:{id:"windburst",name:"Wind Burst",power:75,accuracy:0.9}
+};
+
+const TYPE_MOVE_SETS = {
+  Fire:["ember","flameclaw","fireblast"],
+  Water:["watergun","bubblejet","wavecrash"],
+  Nature:["leafblade","thornwhip","sporecloud"],
+  Electric:["spark","thunderbolt","voltcrash"],
+  Earth:["rockthrow","mudslam","quake"],
+  Air:["gust","airslash","windburst"]
+};
+
+// ---- Species generation ----
+const MONSTERS = [];
+(function(){
+  const TOTAL_CHAINS=500;
+  const TYPES=["Fire","Water","Nature","Electric","Earth","Air"];
+  const ROOTS={
+    Fire:["Flare","Pyro","Cinder","Blaze","Ember","Scorch","Infer","Volca","Magm","Kindl","Char","Burn"],
+    Water:["Aqua","Tide","Bubble","Coral","Marin","Hydro","Splash","Current","Brook","Rivu","Flood","Delta"],
+    Nature:["Leaf","Thorn","Bramble","Moss","Bloom","Root","Grove","Petal","Vine","Bud","Sap","Thicket"],
+    Electric:["Volt","Spark","Shock","Zapp","Storm","Charge","Amp","Flash","Jolt","Watt","Bolt","Static"],
+    Earth:["Rock","Grav","Terra","Geo","Dust","Stone","Boulder","Quake","Clay","Grit","Dune","Crag"],
+    Air:["Gust","Sky","Tempest","Breeze","Zeph","Cloud","Wing","Storm","Draft","Gale","Cirro","Venti"]
+  };
+  const SUF=["cub","ling","pup","drake","horn","fang","beast","scale","wing","geist","mon"];
+  const EXTRA=["a","e","i","o","u","on","ar","en","ir","or","os","is","un","ium","el","ron","tis","ra","lo","ni"];
+
+  const usedNames = new Set();
+  function makeUnique(base){
+    let name = base;
+    let attempt = 0;
+    while(usedNames.has(name)){
+      const extra = EXTRA[attempt % EXTRA.length];
+      name = base + extra;
+      attempt++;
+    }
+    usedNames.add(name);
+    return name;
+  }
+
+  function buildMoves(stage,type){
+    const tMoves = TYPE_MOVE_SETS[type] || [];
+    let base;
+    if(stage===1){
+      base = ["tackle","hit1", tMoves[0]];
+    }else if(stage===2){
+      base = ["tackle","hit1","hit2", tMoves[0], tMoves[1]];
+    }else{
+      base = ["hit1","hit2", tMoves[1], tMoves[2]];
+    }
+    const seen = new Set();
+    const result = [];
+    for(const m of base){
+      if(m && MOVES[m] && !seen.has(m)){
+        seen.add(m);
+        result.push(m);
+        if(result.length>=4) break;
+      }
+    }
+    if(result.length===0) result.push("tackle");
+    return result;
+  }
+
+  let id=1;
+  for(let chain=0;chain<TOTAL_CHAINS;chain++){
+    const type=TYPES[chain%TYPES.length];
+    const roots=ROOTS[type];
+    const root=roots[chain%roots.length];
+    const idx=chain+1;
+
+    const stage1Name = makeUnique(root + SUF[(idx+0)%SUF.length]);
+    const stage2Name = makeUnique(root + SUF[(idx+1)%SUF.length]);
+    const stage3Name = makeUnique(root + SUF[(idx+2)%SUF.length]);
+
+    const baseHP1=38+(idx%10)*2;
+    const baseAtk1=12+(idx%9)*2;
+    const baseDef1=10+(idx%8)*2;
+    const baseSpd1=10+(idx%7)*2;
+    function adj(s){
+      const o={...s};
+      if(type==="Fire"){o.baseAtk+=3;o.baseSpd+=1;}
+      if(type==="Water"){o.baseHP+=3;o.baseDef+=1;}
+      if(type==="Nature"){o.baseHP+=2;o.baseDef+=2;}
+      if(type==="Electric"){o.baseAtk+=2;o.baseSpd+=3;}
+      if(type==="Earth"){o.baseHP+=4;o.baseDef+=3;o.baseSpd-=2;}
+      if(type==="Air"){o.baseSpd+=4;}
+      if(o.baseSpd<5)o.baseSpd=5;
+      return o;
+    }
+    const id1=id++,id2=id++,id3=id++;
+    const s1=adj({baseHP:baseHP1,baseAtk:baseAtk1,baseDef:baseDef1,baseSpd:baseSpd1});
+    MONSTERS.push({
+      id:id1,
+      name:stage1Name,
+      type,
+      stage:1,
+      baseHP:s1.baseHP,
+      baseAtk:s1.baseAtk,
+      baseDef:s1.baseDef,
+      baseSpd:s1.baseSpd,
+      catchRate:.45,
+      moves: buildMoves(1,type),
+      evolvesTo:id2,
+      evolveLevel:14+(idx%5)
+    });
+    const s2=adj({baseHP:baseHP1+18,baseAtk:baseAtk1+8,baseDef:baseDef1+8,baseSpd:baseSpd1+6});
+    MONSTERS.push({
+      id:id2,
+      name:stage2Name,
+      type,
+      stage:2,
+      baseHP:s2.baseHP,
+      baseAtk:s2.baseAtk,
+      baseDef:s2.baseDef,
+      baseSpd:s2.baseSpd,
+      catchRate:.28,
+      moves: buildMoves(2,type),
+      evolvesTo:id3,
+      evolveLevel:30+(idx%6)
+    });
+    const s3=adj({baseHP:baseHP1+36,baseAtk:baseAtk1+16,baseDef:baseDef1+16,baseSpd:baseSpd1+12});
+    MONSTERS.push({
+      id:id3,
+      name:stage3Name,
+      type,
+      stage:3,
+      baseHP:s3.baseHP,
+      baseAtk:s3.baseAtk,
+      baseDef:s3.baseDef,
+      baseSpd:s3.baseSpd,
+      catchRate:.12,
+      moves: buildMoves(3,type)
+    });
+  }
+})();
+
+// ---- Add legendaries ----
+const LEGENDARY_IDS = [];
+(function addLegendaries() {
+  const legData = {
+    Fire:     ["Solpyre","Cindralon","Flareonix","Pyronova","Emberion"],
+    Water:    ["Aqualis","Tidalon","Marileth","Hydrantis","Coralith"],
+    Nature:   ["Sylvaris","Thornlord","Brambleon","Verdantis","Mossagonia"],
+    Electric: ["Voltaris","Stormeon","Zaphael","Wattalon","Ampereon"],
+    Earth:    ["Terragorn","Quakelith","Graviton","Dunebreak","Stonezeus"],
+    Air:      ["Zephyros","Aeralith","Tempestral","Galedra","Skyreon"]
+  };
+
+  let nextId = MONSTERS.length + 1;
+  Object.keys(legData).forEach(type => {
+    legData[type].forEach(name => {
+      const id = nextId++;
+
+      const baseHP  = 90;
+      const baseAtk = 30;
+      const baseDef = 28;
+      const baseSpd = 28;
+
+      const typeMoves = TYPE_MOVE_SETS[type] || [];
+      const moves = ["hit2"].concat(typeMoves).slice(0,4);
+
+      MONSTERS.push({
+        id,
+        name,
+        type,
+        stage: 3,
+        baseHP,
+        baseAtk,
+        baseDef,
+        baseSpd,
+        catchRate: 0.06,
+        moves,
+        isLegendary: true
+      });
+      LEGENDARY_IDS.push(id);
+    });
+  });
+})();
+
+// ---- Game state ----
+let gameState=null;
+let battle={active:false,wild:null,trainer:null,playerIndex:0,trainerIndex:0,participants:[]};
+let currentSection="explore";
+let storageSortMode="dex";
+
+// ---- Helpers ----
+function getSpeciesById(id){return MONSTERS.find(m=>m.id===id);}
+function getSpecies(mon){return getSpeciesById(mon.speciesId);}
+function randomChoice(arr){return arr[Math.floor(Math.random()*arr.length)];}
+function rollVariant(){
+  const keys=VARIANT_KEYS;
+  let total=0;keys.forEach(k=>total+=VARIANTS[k].encounterWeight);
+  let r=Math.random()*total;
+  for(const k of keys){
+    const w=VARIANTS[k].encounterWeight;
+    if(r<w)return k;
+    r-=w;
+  }
+  return "Normal";
+}
+function getVariant(mon){return VARIANTS[mon.variant||"Normal"];}
+
+function getMaxHP(mon){
+  const s=getSpecies(mon),v=getVariant(mon);
+  const base = Math.round((s.baseHP+mon.level*4)*v.hpMult);
+  return base + (mon.hpBonus || 0);
+}
+function getAttack(mon){
+  const s=getSpecies(mon),v=getVariant(mon);
+  const base = Math.round((s.baseAtk+mon.level*2)*v.atkMult);
+  return base + (mon.atkBonus || 0);
+}
+function getDefense(mon){
+  const s=getSpecies(mon),v=getVariant(mon);
+  const base = Math.round((s.baseDef+mon.level*2)*v.defMult);
+  return base + (mon.defBonus || 0);
+}
+function getSpeed(mon){
+  const s=getSpecies(mon),v=getVariant(mon);
+  const base = Math.round((s.baseSpd+mon.level*2)*v.spdMult);
+  return base + (mon.spdBonus || 0);
+}
+
+function getNextLevelExp(l){return 25+l*18;}
+
+// Trainer EXP (no cap)
+function getTrainerNextLevelExp(level){
+  // Slower than monster leveling
+  return 120 + level * 80;
+}
+function addTrainerExp(amount){
+  if (!gameState.trainer) {
+    gameState.trainer = { level: 1, exp: 0 };
+  }
+  if (amount <= 0) return;
+  let t = gameState.trainer;
+  t.exp = (t.exp || 0) + amount;
+  let leveled = false;
+  while (t.exp >= getTrainerNextLevelExp(t.level)) {
+    t.exp -= getTrainerNextLevelExp(t.level);
+    t.level++;         // no explicit cap; trainer can grow forever
+    leveled = true;
+  }
+  if (leveled) {
+    logMessage(`Your Trainer level increased! You are now Trainer Lv ${t.level}.`);
+  }
+}
+
+function createMonsterInstance(speciesId,level,variantKey){
+  const variant=variantKey||rollVariant();
+  const s=getSpeciesById(speciesId);
+  const mon={
+    speciesId,
+    nickname:null,
+    level,
+    exp:0,
+    variant,
+    hp:0,
+    moves:(s.moves || []).slice(0,4),
+    hpBonus:0,
+    atkBonus:0,
+    defBonus:0,
+    spdBonus:0
+  };
+  ensureMonsterMoves(mon);
+  mon.hp=getMaxHP(mon);
+  return mon;
+}
+
+function getMonDisplayName(mon){
+  const s=getSpecies(mon),v=getVariant(mon);
+  const base=mon.nickname||s.name;
+  return v.name==="Normal"?base:(v.prefix+base);
+}
+
+function getVariantBadgeHTML(name){
+  const v=VARIANTS[name];
+  if(!v||name==="Normal")return"";
+  const cls="variant-badge variant-"+name;
+  const label=v.name+(v.emoji?" "+v.emoji:"");
+  return `<span class="${cls}">${label}</span>`;
+}
+
+function logMessage(t){
+  const d=document.getElementById("log");
+  const line=document.createElement("div");
+  line.className="log-line";
+  line.textContent=t;
+  d.appendChild(line);
+  d.scrollTop=d.scrollHeight;
+}
+
+// Dex helpers
+function hasCurrentVariant(speciesId, variantKey){
+  const v = variantKey || "Normal";
+  const p = gameState.player.party;
+  const box = gameState.player.storage;
+  for(const m of p){
+    if(m.speciesId===speciesId && (m.variant||"Normal")===v) return true;
+  }
+  for(const m of box){
+    if(m.speciesId===speciesId && (m.variant||"Normal")===v) return true;
+  }
+  return false;
+}
+function buildCurrentDexSnapshot(){
+  const dex = {};
+  function addMon(mon){
+    const sid = mon.speciesId;
+    const v = mon.variant || "Normal";
+    if(!dex[sid]) dex[sid] = {};
+    if(!dex[sid][v]) dex[sid][v] = {owned:0};
+    dex[sid][v].owned++;
+  }
+  gameState.player.party.forEach(addMon);
+  gameState.player.storage.forEach(addMon);
+  return dex;
+}
+
+// ---- Save / load ----
+function migrateInventory(inv){
+  if(inv.orbBasic===undefined){
+    inv.orbBasic=inv.orb||15;
+    delete inv.orb;
+  }
+  if(inv.orbGreat===undefined)inv.orbGreat=5;
+  if(inv.orbUltra===undefined)inv.orbUltra=1;
+  if(inv.orbUltimate===undefined)inv.orbUltimate=0;
+  if(inv.potion===undefined)inv.potion=5;
+
+  if (inv.hpCore === undefined) inv.hpCore = 0;
+  if (inv.atkCore === undefined) inv.atkCore = 0;
+  if (inv.defCore === undefined) inv.defCore = 0;
+  if (inv.spdCore === undefined) inv.spdCore = 0;
+  if (inv.xpChip === undefined) inv.xpChip = 0;
+}
+
+function ensureMonsterMoves(mon){
+  const s = getSpecies(mon);
+  if(!s) return;
+  if(!mon.moves || !Array.isArray(mon.moves) || mon.moves.length===0){
+    mon.moves = (s.moves || []).slice(0,4);
+  } else {
+    mon.moves = mon.moves.filter(id => MOVES[id]);
+    if(mon.moves.length===0){
+      mon.moves = (s.moves || []).slice(0,4);
+    }
+  }
+  const typeMoves = TYPE_MOVE_SETS[s.type] || [];
+  const hasTypeMove = mon.moves.some(id => typeMoves.includes(id));
+  if(!hasTypeMove && typeMoves.length>0){
+    mon.moves.push(typeMoves[0]);
+  }
+  const seen = new Set();
+  const out = [];
+  for(const id of mon.moves){
+    if(MOVES[id] && !seen.has(id)){
+      seen.add(id);
+      out.push(id);
+      if(out.length>=4) break;
+    }
+  }
+  if(out.length===0) out.push("tackle");
+  mon.moves = out;
+}
+
+function ensureMonBonuses(mon){
+  if (mon.hpBonus == null) mon.hpBonus = 0;
+  if (mon.atkBonus == null) mon.atkBonus = 0;
+  if (mon.defBonus == null) mon.defBonus = 0;
+  if (mon.spdBonus == null) mon.spdBonus = 0;
+}
+
+function saveGame(){ if(gameState) localStorage.setItem(STORAGE_KEY,JSON.stringify(gameState)); }
+
+function loadGame(){
+  const raw=localStorage.getItem(STORAGE_KEY);
+  if(!raw){newGame();return;}
+  try{
+    const data=JSON.parse(raw);
+    if(!data.player||!Array.isArray(data.player.party))throw new Error("bad");
+    if(!data.inventory)data.inventory={};
+    migrateInventory(data.inventory);
+    if(!data.player.storage)data.player.storage=[];
+    if(!data.trainer) data.trainer = { level:1, exp:0 };
+    data.player.party.forEach(m => { ensureMonsterMoves(m); ensureMonBonuses(m); });
+    data.player.storage.forEach(m => { ensureMonsterMoves(m); ensureMonBonuses(m); });
+    gameState=data;
+    battle={active:false,wild:null,trainer:null,playerIndex:0,trainerIndex:0,participants:[]};
+    logMessage("Loaded your existing game.");
+    renderAll();
+  }catch(e){
+    console.error(e);
+    newGame();
+  }
+}
+
+function newGame(){
+  gameState={
+    player:{name:"Player",money:300,party:[],storage:[]},
+    trainer:{level:1,exp:0},
+    inventory:{potion:5,orbBasic:15,orbGreat:5,orbUltra:1,orbUltimate:0,hpCore:0,atkCore:0,defCore:0,spdCore:0,xpChip:0}
+  };
+  const starter=createMonsterInstance(1,5,"Normal");
+  starter.nickname=getSpecies(starter).name;
+  gameState.player.party.push(starter);
+  battle={active:false,wild:null,trainer:null,playerIndex:0,trainerIndex:0,participants:[]};
+  localStorage.setItem(STORAGE_KEY,JSON.stringify(gameState));
+  logMessage("New game started! You received your first monster.");
+  renderAll();
+}
+
+function resetGame(){
+  if(!confirm("Reset game?"))return;
+  localStorage.removeItem(STORAGE_KEY);
+  document.getElementById("log").innerHTML="";
+  gameState=null;
+  battle={active:false,wild:null,trainer:null,playerIndex:0,trainerIndex:0,participants:[]};
+  newGame();
+}
+
+// ---- Icon rendering ----
+function getTypeBaseHue(type){
+  switch(type){
+    case "Fire": return 18;
+    case "Water": return 210;
+    case "Nature": return 120;
+    case "Electric": return 50;
+    case "Earth": return 30;
+    case "Air": return 190;
+    default: return 0;
+  }
+}
+function getVariantColorAdjust(variantName){
+  switch(variantName){
+    case "Shiny": return {sat:1.1,light:1.1,hueShift:10};
+    case "Dark": return {sat:0.9,light:0.6,hueShift:-10};
+    case "Metallic": return {sat:0.2,light:1.1,hueShift:0};
+    case "Mystic": return {sat:1.3,light:1.05,hueShift:40};
+    case "Crystal": return {sat:0.8,light:1.2,hueShift:0};
+    case "Shadow": return {sat:1.0,light:0.45,hueShift:-15};
+    case "Radiant": return {sat:1.2,light:1.3,hueShift:15};
+    case "Void": return {sat:0.2,light:0.25,hueShift:-30};
+    case "Neon": return {sat:1.5,light:1.2,hueShift:30};
+    case "Pastel": return {sat:0.6,light:1.3,hueShift:20};
+    case "Toxic": return {sat:1.3,light:1.0,hueShift:80};
+    case "Gilded": return {sat:1.2,light:1.1,hueShift:15};
+    case "Cosmic": return {sat:1.0,light:0.9,hueShift:220};
+    case "Divine": return {sat:0.4,light:1.4,hueShift:50};
+    default: return {sat:1,light:1,hueShift:0};
+  }
+}
+function hsl(h,s,l){ return `hsl(${h}, ${s}%, ${l}%)`; }
+
+function drawMonsterIcon(canvas,speciesId,variantName){
+  const species=getSpeciesById(speciesId);
+  if(!species)return;
+  const vInfo=VARIANTS[variantName]||VARIANTS.Normal;
+  const ctx=canvas.getContext("2d");
+  const size=Math.min(canvas.width,canvas.height);
+  const cx=size/2,cy=size/2;
+  ctx.clearRect(0,0,size,size);
+
+  const baseHue=getTypeBaseHue(species.type);
+  let sat=70,light=55;
+  const adj=getVariantColorAdjust(variantName);
+  let hue=(baseHue+adj.hueShift+360)%360;
+  sat=Math.min(100,Math.max(10,sat*adj.sat));
+  light=Math.min(90,Math.max(15,light*adj.light));
+
+  const seed=species.id;
+  const shapeType=seed%4;
+  const spikes=3+((seed>>2)%5);
+  const rotation=((seed*37)%360)*Math.PI/180/4;
+
+  ctx.save();
+  ctx.translate(cx,cy);
+  ctx.rotate(rotation);
+
+  ctx.beginPath();
+  ctx.arc(0,0,size*0.46,0,Math.PI*2);
+  ctx.fillStyle=hsl(hue, sat*0.3, light*0.4);
+  ctx.fill();
+
+  ctx.beginPath();
+  switch(shapeType){
+    case 0:
+      ctx.arc(0,0,size*0.28,0,Math.PI*2);
+      break;
+    case 1:
+      ctx.moveTo(0,-size*0.32);
+      ctx.lineTo(size*0.26,0);
+      ctx.lineTo(0,size*0.32);
+      ctx.lineTo(-size*0.26,0);
+      ctx.closePath();
+      break;
+    case 2:
+      ctx.moveTo(0,-size*0.34);
+      ctx.lineTo(size*0.30,size*0.2);
+      ctx.lineTo(-size*0.30,size*0.2);
+      ctx.closePath();
+      break;
+    case 3:
+      const r=size*0.28;
+      ctx.moveTo(-r,-r*0.6);
+      ctx.lineTo(r,-r*0.6);
+      ctx.quadraticCurveTo(r*1.1,0,r,r*0.6);
+      ctx.lineTo(-r,r*0.6);
+      ctx.quadraticCurveTo(-r*1.1,0,-r,-r*0.6);
+      ctx.closePath();
+      break;
+  }
+  ctx.fillStyle=hsl(hue,sat,light);
+  ctx.fill();
+
+  ctx.beginPath();
+  const inner=size*0.30;
+  const outer=size*(0.34+((seed%7)/100));
+  for(let i=0;i<spikes;i++){
+    const a=i*(Math.PI*2/spikes);
+    const x1=Math.cos(a)*inner,y1=Math.sin(a)*inner;
+    const x2=Math.cos(a)*(outer),y2=Math.sin(a)*(outer);
+    ctx.moveTo(x1,y1);
+    ctx.lineTo(x2,y2);
+  }
+  ctx.strokeStyle=hsl(hue,sat*0.9,light*1.05);
+  ctx.lineWidth=size*0.04;
+  ctx.stroke();
+
+  if(variantName!=="Normal"){
+    ctx.beginPath();
+    ctx.arc(0,0,size*0.18,0,Math.PI*2);
+    let innerHue=hue;
+    let innerSat=sat;
+    let innerLight=light;
+    if(["Shiny","Gilded","Divine"].includes(variantName)){
+      innerHue=50;innerSat=90;innerLight=80;
+    }else if(["Dark","Shadow","Void"].includes(variantName)){
+      innerLight=25;
+    }else if(variantName==="Cosmic"){
+      innerHue=220;innerSat=80;innerLight=70;
+    }
+    ctx.fillStyle=hsl(innerHue,innerSat,innerLight);
+    ctx.fill();
+
+    if(vInfo.rarityRank>=13){
+      ctx.beginPath();
+      const starR=size*0.09;
+      for(let i=0;i<5;i++){
+        const a=i*(Math.PI*2/5)-Math.PI/2;
+        const x=Math.cos(a)*starR;
+        const y=Math.sin(a)*starR;
+        if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+      }
+      ctx.closePath();
+      ctx.fillStyle="rgba(255,255,255,0.9)";
+      ctx.fill();
+    }
+  }
+  ctx.restore();
+}
+
+function refreshAllIcons(){
+  const canvases=document.querySelectorAll("canvas.mon-icon, canvas.dex-icon");
+  canvases.forEach(c=>{
+    const sid=parseInt(c.dataset.speciesId,10);
+    if(!sid)return;
+    const v=c.dataset.variant||"Normal";
+    const size=c.classList.contains("dex-icon")?40:64;
+    c.width=size;
+    c.height=size;
+    drawMonsterIcon(c,sid,v);
+  });
+}
+
+// ---- Rendering ----
+function renderStatusBar(){
+  const m=document.getElementById("status-money");
+  const o=document.getElementById("status-orbs");
+  const p=document.getElementById("status-potions");
+  const tSpan=document.getElementById("status-trainer");
+  const inv=gameState.inventory,pl=gameState.player;
+  m.textContent="Money: "+pl.money;
+  o.textContent="Orbs B/G/U/Ult: "+inv.orbBasic+" / "+inv.orbGreat+" / "+inv.orbUltra+" / "+inv.orbUltimate;
+  p.textContent="Potions: "+inv.potion;
+  const t = gameState.trainer || {level:1,exp:0};
+  tSpan.textContent = "Trainer Lv: " + t.level;
+
+  document.getElementById("bag-potions").textContent=inv.potion;
+  document.getElementById("bag-orb-basic").textContent=inv.orbBasic;
+  document.getElementById("bag-orb-great").textContent=inv.orbGreat;
+  document.getElementById("bag-orb-ultra").textContent=inv.orbUltra;
+  document.getElementById("bag-orb-ultimate").textContent=inv.orbUltimate;
+  document.getElementById("bag-hp-core").textContent  = inv.hpCore;
+  document.getElementById("bag-atk-core").textContent = inv.atkCore;
+  document.getElementById("bag-def-core").textContent = inv.defCore;
+  document.getElementById("bag-spd-core").textContent = inv.spdCore;
+  document.getElementById("bag-xp-chip").textContent  = inv.xpChip;
+}
+
+function canEvolve(mon){
+  const s=getSpecies(mon);
+  return !!(s.evolvesTo && mon.level>=s.evolveLevel);
+}
+
+function renderParty(){
+  const d=document.getElementById("party-list");
+  d.innerHTML="";
+  const party=gameState.player.party;
+  if(!party.length){d.textContent="You have no monsters in your party.";return;}
+  party.forEach((mon,idx)=>{
+    const s=getSpecies(mon),max=getMaxHP(mon),v=getVariant(mon);
+    const outer=document.createElement("div");outer.className="party-mon";
+    const inner=document.createElement("div");inner.className="party-mon-inner";
+
+    const canvas=document.createElement("canvas");
+    canvas.className="mon-canvas mon-icon";
+    canvas.dataset.speciesId=String(s.id);
+    canvas.dataset.variant=mon.variant||"Normal";
+
+    const right=document.createElement("div");
+    const header=document.createElement("div");
+    header.className="party-mon-header";
+
+    let nameHtml = `${getMonDisplayName(mon)} (Lv ${mon.level}) [${s.type}] ${getVariantBadgeHTML(mon.variant||"Normal")}`;
+    if(s.isLegendary){
+      nameHtml += ` <span class="legendary-tag">LEGENDARY</span>`;
+    }
+
+    header.innerHTML=`<span>${nameHtml}</span><span>HP: ${mon.hp} / ${max}</span>`;
+
+    const sub=document.createElement("div");
+    sub.className="party-mon-sub";
+    const evoInfo = s.isLegendary ? "Legendary (no evolution)" :
+                    (s.evolvesTo ? `Evo at Lv ${s.evolveLevel}` : "Final form");
+    sub.innerHTML=`<span>Variant: ${v.name}${v.emoji?" "+v.emoji:""}</span><span>${evoInfo}</span>`;
+
+    const moves=document.createElement("div");
+    moves.className="small-label";
+    moves.textContent="Moves: "+mon.moves.map(id=>MOVES[id].name).join(", ");
+
+    const need = getNextLevelExp(mon.level);
+    const pct = Math.max(0,Math.min(100,Math.round(mon.exp/need*100)));
+    const xpWrap=document.createElement("div");
+    xpWrap.innerHTML = `
+      <div class="xp-bar">
+        <div class="xp-bar-inner" style="width:${pct}%;"></div>
+        <div class="xp-bar-text">${mon.exp} / ${need}</div>
+      </div>
+    `;
+
+    const buttons=document.createElement("div");
+    if(idx===battle.playerIndex){
+      const span=document.createElement("span");
+      span.className="small-label ok";
+      span.textContent="Active";
+      buttons.appendChild(span);
+    }else{
+      const b=document.createElement("button");
+      b.textContent="Set active";
+      b.onclick=()=>{battle.playerIndex=idx;logMessage(`Active: ${getMonDisplayName(mon)}`);renderAll();saveGame();};
+      buttons.appendChild(b);
+    }
+    const heal=document.createElement("button");
+    heal.style.marginLeft="6px";heal.textContent="Use potion";
+    heal.onclick=()=>healMonsterFromParty(idx);
+    buttons.appendChild(heal);
+
+    const toBox=document.createElement("button");
+    toBox.style.marginLeft="6px";toBox.textContent="Send to box";
+    toBox.onclick=()=>movePartyToStorage(idx);
+    buttons.appendChild(toBox);
+
+    if(canEvolve(mon)){
+      const evoBtn=document.createElement("button");
+      evoBtn.style.marginLeft="6px";
+      evoBtn.textContent="Evolve";
+      evoBtn.onclick=()=>evolveFromParty(idx);
+      buttons.appendChild(evoBtn);
+    }
+
+    const inv = gameState.inventory;
+    if (inv.hpCore > 0){
+      const b=document.createElement("button");
+      b.style.marginLeft="6px";
+      b.textContent=`HP Core (+5) [${inv.hpCore}]`;
+      b.onclick=()=>useStatCore("hp", idx);
+      buttons.appendChild(b);
+    }
+    if (inv.atkCore > 0){
+      const b=document.createElement("button");
+      b.style.marginLeft="6px";
+      b.textContent=`Atk Core (+2) [${inv.atkCore}]`;
+      b.onclick=()=>useStatCore("atk", idx);
+      buttons.appendChild(b);
+    }
+    if (inv.defCore > 0){
+      const b=document.createElement("button");
+      b.style.marginLeft="6px";
+      b.textContent=`Def Core (+2) [${inv.defCore}]`;
+      b.onclick=()=>useStatCore("def", idx);
+      buttons.appendChild(b);
+    }
+    if (inv.spdCore > 0){
+      const b=document.createElement("button");
+      b.style.marginLeft="6px";
+      b.textContent=`Spd Core (+2) [${inv.spdCore}]`;
+      b.onclick=()=>useStatCore("spd", idx);
+      buttons.appendChild(b);
+    }
+    if (inv.xpChip > 0){
+      const b=document.createElement("button");
+      b.style.marginLeft="6px";
+      b.textContent=`XP Chip [${inv.xpChip}]`;
+      b.onclick=()=>useXpChip(idx);
+      buttons.appendChild(b);
+    }
+
+    right.appendChild(header);
+    right.appendChild(sub);
+    right.appendChild(moves);
+    right.appendChild(xpWrap);
+    right.appendChild(buttons);
+
+    inner.appendChild(canvas);
+    inner.appendChild(right);
+    outer.appendChild(inner);
+    d.appendChild(outer);
+  });
+}
+
+function renderStorage(){
+  const d=document.getElementById("storage-list");
+  d.innerHTML="";
+  const boxRaw=gameState.player.storage;
+  if(!boxRaw.length){d.textContent="Storage is empty.";return;}
+  const box = boxRaw.slice();
+  if(storageSortMode==="level"){
+    box.sort((a,b)=>{
+      if(b.level!==a.level) return b.level-a.level;
+      return getSpecies(a).id-getSpecies(b).id;
+    });
+  }else{
+    box.sort((a,b)=>{
+      const da=getSpecies(a).id,db=getSpecies(b).id;
+      if(da!==db)return da-db;
+      return b.level-a.level;
+    });
+  }
+  box.forEach((mon)=>{
+    const s=getSpecies(mon),max=getMaxHP(mon),v=getVariant(mon);
+    const realIdx = boxRaw.indexOf(mon);
+    const outer=document.createElement("div");outer.className="storage-mon";
+    const inner=document.createElement("div");inner.className="storage-mon-inner";
+    const canvas=document.createElement("canvas");
+    canvas.className="mon-canvas mon-icon";
+    canvas.dataset.speciesId=String(s.id);
+    canvas.dataset.variant=mon.variant||"Normal";
+    const right=document.createElement("div");
+    const header=document.createElement("div");
+    header.className="storage-mon-header";
+
+    let nameHtml = `${getMonDisplayName(mon)} (Lv ${mon.level}) [${s.type}] ${getVariantBadgeHTML(mon.variant||"Normal")}`;
+    if(s.isLegendary){
+      nameHtml += ` <span class="legendary-tag">LEGENDARY</span>`;
+    }
+
+    header.innerHTML=`<span>${nameHtml}</span><span>HP: ${mon.hp} / ${max}</span>`;
+    const sub=document.createElement("div");
+    sub.className="storage-mon-sub";
+    sub.innerHTML=`<span>Variant: ${v.name}${v.emoji?" "+v.emoji:""}</span><span>Stage ${s.stage}${s.isLegendary?" (Legendary)":""}</span>`;
+
+    const need = getNextLevelExp(mon.level);
+    const pct = Math.max(0,Math.min(100,Math.round(mon.exp/need*100)));
+    const xpWrap=document.createElement("div");
+    xpWrap.innerHTML = `
+      <div class="xp-bar">
+        <div class="xp-bar-inner" style="width:${pct}%;"></div>
+        <div class="xp-bar-text">${mon.exp} / ${need}</div>
+      </div>
+    `;
+
+    const buttons=document.createElement("div");
+    const b=document.createElement("button");
+    b.textContent="Add to party";
+    b.onclick=()=>moveStorageToParty(realIdx);
+    buttons.appendChild(b);
+
+    right.appendChild(header);
+    right.appendChild(sub);
+    right.appendChild(xpWrap);
+    right.appendChild(buttons);
+    inner.appendChild(canvas);
+    inner.appendChild(right);
+    outer.appendChild(inner);
+    d.appendChild(outer);
+  });
+}
+
+function renderBattle(){
+  const d=document.getElementById("battle-section");
+  if(!battle.active || (!battle.wild && !battle.trainer)){d.style.display="none";d.innerHTML="";return;}
+  const p=getActiveMon();
+  if(!p){d.style.display="none";d.innerHTML="";return;}
+  const ps=getSpecies(p);
+  const pMax=getMaxHP(p);
+  const pPct=Math.max(0,Math.min(100,Math.round(p.hp/pMax*100)));
+  const hpColor=pct=>pct<=25?"#f97373":pct<=60?"#facc15":"#4ade80";
+  const pNeed=getNextLevelExp(p.level);
+  const pXpPct=Math.max(0,Math.min(100,Math.round(p.exp/pNeed*100)));
+
+  let enemyMon, enemySpecies, title, trainerInfoHTML="", ownedVariant=false, legendaryWarning="";
+  if(battle.trainer){
+    enemyMon = battle.trainer.team[battle.trainerIndex];
+    enemySpecies = getSpecies(enemyMon);
+    title = `Trainer Battle vs ${battle.trainer.name}`;
+    const total = battle.trainer.team.length;
+    const idx = battle.trainerIndex+1;
+    trainerInfoHTML = `<div class="small-label">Trainer team: ${idx} / ${total}</div>`;
+    ownedVariant = hasCurrentVariant(enemySpecies.id, enemyMon.variant||"Normal");
+  }else{
+    enemyMon = battle.wild;
+    enemySpecies = getSpecies(enemyMon);
+    title = enemySpecies.isLegendary ? "Legendary Battle" : "Wild Battle";
+    ownedVariant = hasCurrentVariant(enemySpecies.id, enemyMon.variant||"Normal");
+    if(enemySpecies.isLegendary){
+      legendaryWarning = `<div class="side-note">Legendaries are extremely hard to catch with normal orbs. Ultimate Orbs never fail.</div>`;
+    }
+  }
+
+  const wMax=getMaxHP(enemyMon);
+  const wPct=Math.max(0,Math.min(100,Math.round(enemyMon.hp/wMax*100)));
+  const ownedLabel = ownedVariant ? "Owned" : "New";
+  const ownedSymbol = ownedVariant ? "✔" : "—";
+  const ownedClass = ownedVariant ? "caught-pill owned" : "caught-pill";
+
+  let movesHtml="";
+  p.moves.forEach((mid,i)=>{const mv=MOVES[mid];movesHtml+=`<button onclick="useMove(${i})">${mv.name}</button>`;});
+
+  const inv=gameState.inventory;
+
+  const party = gameState.player.party;
+  let switchHtml = "";
+  const options = party
+    .map((m,idx) => ({m,idx}))
+    .filter(x => x.idx !== battle.playerIndex && x.m.hp > 0);
+  if(options.length){
+    switchHtml += `<div class="switch-list"><div class="small-label">Switch to:</div>`;
+    options.forEach(({m,idx}) => {
+      const s = getSpecies(m);
+      switchHtml += `<button onclick="switchActive(${idx})">${getMonDisplayName(m)} (Lv ${m.level}, ${m.hp}/${getMaxHP(m)} HP, ${s.type})</button>`;
+    });
+    switchHtml += `</div>`;
+  }
+
+  const pLegend = ps.isLegendary ? `<span class="legendary-tag">LEGENDARY</span>` : "";
+  const eLegend = enemySpecies.isLegendary ? `<span class="legendary-tag">LEGENDARY</span>` : "";
+
+  d.style.display="block";
+  d.innerHTML=`
+    <div class="battle-header">${title}</div>
+    <div class="battle-mon-container">
+      <div class="battle-mon">
+        <div class="battle-mon-inner">
+          <canvas class="mon-canvas mon-icon" data-species-id="${ps.id}" data-variant="${p.variant||"Normal"}"></canvas>
+          <div>
+            <h3>${getMonDisplayName(p)} (Lv ${p.level}) [${ps.type}] ${getVariantBadgeHTML(p.variant||"Normal")}${pLegend}</h3>
+            <div>HP: ${p.hp} / ${pMax}</div>
+            <div class="hp-bar"><div class="hp-bar-inner" style="width:${pPct}%;background:${hpColor(pPct)};"></div><div class="hp-bar-text">${pPct}%</div></div>
+            <div class="xp-bar" style="margin-top:6px;">
+              <div class="xp-bar-inner" style="width:${pXpPct}%;"></div>
+              <div class="xp-bar-text">${p.exp} / ${pNeed}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="battle-mon">
+        <div class="battle-mon-inner">
+          <canvas class="mon-canvas mon-icon" data-species-id="${enemySpecies.id}" data-variant="${enemyMon.variant||"Normal"}"></canvas>
+          <div>
+            <h3>${battle.trainer ? battle.trainer.name + "'s " : "Wild "}${getMonDisplayName(enemyMon)} (Lv ${enemyMon.level}) [${enemySpecies.type}] ${getVariantBadgeHTML(enemyMon.variant||"Normal")}${eLegend}</h3>
+            <div>HP: ${enemyMon.hp} / ${wMax}</div>
+            <div class="hp-bar"><div class="hp-bar-inner" style="width:${wPct}%;background:${hpColor(wPct)};"></div><div class="hp-bar-text">${wPct}%</div></div>
+            ${trainerInfoHTML}
+            <div style="margin-top:4px;">
+              <span class="${ownedClass}"><span>${ownedSymbol}</span><span>${ownedLabel} (this species + variant)</span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="battle-actions">
+      <div class="moves">
+        <div class="small-label">Choose a move:</div>
+        ${movesHtml}
+      </div>
+      <div class="side-actions">
+        <button onclick="usePotionInBattle()">Use Potion (${inv.potion})</button>
+        <button onclick="throwOrb('basic')">Throw Basic Orb (${inv.orbBasic})</button>
+        <button onclick="throwOrb('great')">Throw Great Orb (${inv.orbGreat})</button>
+        <button onclick="throwOrb('ultra')">Throw Ultra Orb (${inv.orbUltra})</button>
+        <button onclick="throwOrb('ultimate')">Throw Ultimate Orb (${inv.orbUltimate})</button>
+        <button onclick="tryRun()">Run from battle</button>
+        ${legendaryWarning}
+        ${switchHtml}
+      </div>
+    </div>
+  `;
+}
+
+function renderDex(){
+  const d=document.getElementById("dex-list");
+  d.innerHTML="";
+  const dexSnap=buildCurrentDexSnapshot();
+
+  let ownedSpecies=0;
+  let ownedLegendaries=0;
+  MONSTERS.forEach(s=>{
+    const sd=dexSnap[s.id]||{};
+    const vals=Object.values(sd);
+    const anyOwned=vals.some(e=>e.owned>0);
+    if(anyOwned){
+      ownedSpecies++;
+      if(s.isLegendary) ownedLegendaries++;
+    }
+  });
+  const total = MONSTERS.length;
+  const totalLeg = LEGENDARY_IDS.length;
+  document.getElementById("dex-summary").textContent=
+    `Species owned: ${ownedSpecies} / ${total}. ` +
+    `Legendaries owned: ${ownedLegendaries} / ${totalLeg}. Variants per species: ${VARIANT_KEYS.length}.`;
+
+  MONSTERS.forEach(s=>{
+    const entry=document.createElement("div");entry.className="dex-entry";
+    const header=document.createElement("div");header.className="dex-header-line";
+    const left=document.createElement("div");left.className="dex-header-left";
+
+    const canvas=document.createElement("canvas");
+    canvas.className="dex-canvas dex-icon mon-icon";
+    canvas.dataset.speciesId=String(s.id);
+    canvas.dataset.variant="Normal";
+
+    const text=document.createElement("span");
+    let line=`${String(s.id).padStart(4,"0")} – ${s.name} [${s.type}] (Stage ${s.stage})`;
+    if(s.isLegendary) line += " 👑 LEGENDARY";
+    text.textContent=line;
+
+    left.appendChild(canvas);left.appendChild(text);
+
+    const right=document.createElement("span");
+    const sd=dexSnap[s.id]||{};
+    const ownedV=Object.values(sd).filter(e=>e.owned>0).length;
+    right.textContent=`Owned variants: ${ownedV} / ${VARIANT_KEYS.length}`;
+    header.appendChild(left);
+    header.appendChild(right);
+
+    const row=document.createElement("div");row.className="dex-variants";
+    VARIANT_KEYS.forEach(vk=>{
+      const e=sd[vk]||{owned:0};
+      let sym="—",cls="dex-status-none",extra="";
+      if(e.owned>0){sym="✔";cls="dex-status-owned";if(e.owned>1)extra=" x"+e.owned;}
+      const span=document.createElement("span");
+      span.className="dex-variant "+cls;
+      span.textContent=`${vk}: ${sym}${extra}`;
+      row.appendChild(span);
+    });
+
+    entry.appendChild(header);
+    entry.appendChild(row);
+    d.appendChild(entry);
+  });
+}
+
+function showSection(name){
+  currentSection=name;
+  ["explore","train","party","storage","bag","shop","dex"].forEach(sec=>{
+    const el=document.getElementById(sec+"-section");
+    if(el)el.style.display=(sec===name)?"block":"none";
+  });
+  document.querySelectorAll("#nav button").forEach(btn=>{
+    if(btn.dataset.section===name)btn.classList.add("active");
+    else btn.classList.remove("active");
+  });
+
+  if (name === "dex") {
+    renderDex();
+  }
+
+  refreshAllIcons();
+}
+
+function renderAll(){
+  if(!gameState)return;
+  renderStatusBar();
+  renderParty();
+  renderStorage();
+  renderBattle();
+  if (currentSection === "dex") {
+    renderDex();
+  }
+  showSection(currentSection);
+}
+
+// ---- Battle / leveling ----
+function getActiveMon(){
+  const party=gameState.player.party;
+  if(!party.length)return null;
+  if(battle.playerIndex<0||battle.playerIndex>=party.length)battle.playerIndex=0;
+  return party[battle.playerIndex];
+}
+
+function getFirstHealthyIndex(){
+  const party=gameState.player.party;
+  for(let i=0;i<party.length;i++)if(party[i].hp>0)return i;
+  return -1;
+}
+
+function calcDamage(att,def){
+  const atk=getAttack(att),df=getDefense(def);
+  let dmg=Math.floor(((2*att.level/5+2)*40*atk/Math.max(1,df))/50)+2;
+  if(dmg<1)dmg=1;
+  return dmg;
+}
+
+function healPartyAfterBattle(){
+  const party = gameState.player.party;
+  party.forEach(m => {
+    m.hp = getMaxHP(m);
+  });
+  logMessage("Your party was fully healed after the battle.");
+}
+
+function markParticipant(idx){
+  if(idx==null || idx<0) return;
+  if(!battle.participants) battle.participants = [];
+  if(!battle.participants.includes(idx)){
+    battle.participants.push(idx);
+  }
+}
+
+function addExpToMon(mon, amount) {
+  if (!mon || amount <= 0) return;
+  mon.exp = (mon.exp || 0) + amount;
+  while (mon.exp >= getNextLevelExp(mon.level)) {
+    mon.exp -= getNextLevelExp(mon.level);
+    mon.level++;
+    mon.hp = getMaxHP(mon);
+    logMessage(`${getMonDisplayName(mon)} grew to level ${mon.level}!`);
+    checkEvolutionAvailability(mon);
+  }
+}
+
+function checkEvolutionAvailability(mon){
+  const s=getSpecies(mon);
+  if(s.evolvesTo && mon.level>=s.evolveLevel){
+    if(!mon.readyToEvolve){
+      mon.readyToEvolve=true;
+      logMessage(`${getMonDisplayName(mon)} can now evolve! Open the Party screen and press Evolve.`);
+    }
+  }
+}
+
+function awardSharedExp(totalXp, coins, defeatedDesc){
+  const party = gameState.player.party;
+  const parts = (battle.participants && battle.participants.length)
+    ? battle.participants.slice()
+    : [battle.playerIndex];
+
+  const valid = parts.filter(idx => idx>=0 && idx<party.length);
+  if(!valid.length) return;
+
+  const n = valid.length;
+  const base = Math.floor(totalXp / n);
+  let rem = totalXp % n;
+
+  logMessage(`${defeatedDesc} EXP was shared by ${n} participant${n>1?"s":""}.`);
+  if(coins && coins>0){
+    gameState.player.money += coins;
+    logMessage(`You earned ${coins} coins.`);
+  }
+
+  valid.forEach((idx,i)=>{
+    const mon = party[idx];
+    if(!mon) return;
+    const gained = base + (i < rem ? 1 : 0);
+    addExpToMon(mon, gained);
+  });
+
+  const trainerExpGain = Math.max(1, Math.floor(totalXp * 0.25));
+  addTrainerExp(trainerExpGain);
+}
+
+function handleTrainerMonDefeated(attacker, enemyMon){
+  const xp=10+enemyMon.level*5;
+  const coins=5+enemyMon.level*3;
+  awardSharedExp(xp, coins, `Trainer ${battle.trainer.name}'s ${getMonDisplayName(enemyMon)} was defeated and`);
+  tryDropItem(true);
+
+  const team = battle.trainer.team;
+  if(battle.trainerIndex < team.length-1){
+    battle.trainerIndex++;
+    const nextMon = team[battle.trainerIndex];
+    logMessage(`${battle.trainer.name} sends out ${getMonDisplayName(nextMon)} (Lv ${nextMon.level})!`);
+  }else{
+    logMessage(`You defeated Trainer ${battle.trainer.name}!`);
+    battle.active=false;
+    battle.trainer=null;
+    healPartyAfterBattle();
+    battle.participants = [];
+  }
+}
+
+function handleWildDefeated(p,w){
+  logMessage(`Wild ${getMonDisplayName(w)} fainted!`);
+  const xp=12+w.level*6,coins=8+w.level*4;
+  awardSharedExp(xp, coins, `Wild ${getMonDisplayName(w)} was defeated and`);
+  tryDropItem(false);
+  battle.active=false;battle.wild=null;
+  healPartyAfterBattle();
+  battle.participants = [];
+  saveGame();renderAll();
+}
+
+function handlePlayerMonFainted(){
+  const f=getActiveMon();if(!f)return;
+  logMessage(`${getMonDisplayName(f)} fainted!`);
+  const ni=getFirstHealthyIndex();
+  if(ni===-1)endBattleLose();
+  else{
+    battle.playerIndex=ni;
+    markParticipant(ni);
+    logMessage(`You send out ${getMonDisplayName(getActiveMon())}!`);
+  }
+}
+
+function endBattleLose(){
+  logMessage("All your monsters have fainted! You rush back to safety.");
+  const currentMoney = gameState.player.money;
+  let loss = Math.floor(currentMoney * 0.10);
+  if(loss > 100) loss = 100;
+  if(loss < 1 && currentMoney > 0) loss = 1;
+  gameState.player.money = Math.max(0, currentMoney - loss);
+  if(loss > 0){
+    logMessage(`You dropped ${loss} coins (about 10% of your money, capped at 100).`);
+  } else {
+    logMessage("You had no coins to lose.");
+  }
+  healPartyAfterBattle();
+  battle.active=false;battle.wild=null;battle.trainer=null;battle.trainerIndex=0;
+  battle.participants = [];
+  saveGame();renderAll();
+}
+
+function useMove(idx){
+  if(!battle.active || (!battle.wild && !battle.trainer))return;
+  const p=getActiveMon();
+  if(!p||p.hp<=0){
+    logMessage("Your active monster cannot fight!");
+    const ni=getFirstHealthyIndex();
+    if(ni===-1)endBattleLose();
+    else{
+      battle.playerIndex=ni;
+      markParticipant(ni);
+      logMessage(`You send out ${getMonDisplayName(getActiveMon())}!`);
+      renderAll();
+    }
+    return;
+  }
+  markParticipant(battle.playerIndex);
+  const enemyMon = battle.trainer ? battle.trainer.team[battle.trainerIndex] : battle.wild;
+  const pSpd=getSpeed(p),wSpd=getSpeed(enemyMon);
+
+  function pAct(){
+    const moveId=p.moves[idx],mv=MOVES[moveId];
+    if(Math.random()>mv.accuracy){logMessage(`${getMonDisplayName(p)}'s ${mv.name} missed!`);return;}
+    const dmg=calcDamage(p,enemyMon);
+    enemyMon.hp=Math.max(0,enemyMon.hp-dmg);
+    logMessage(`${getMonDisplayName(p)} used ${mv.name} and dealt ${dmg} damage.`);
+    if(enemyMon.hp<=0){
+      if(battle.trainer){
+        handleTrainerMonDefeated(p, enemyMon);
+      }else{
+        handleWildDefeated(p,enemyMon);
+      }
+    }
+  }
+  function wAct(){
+    if(!battle.active || (!battle.wild && !battle.trainer))return;
+    if(enemyMon.hp<=0||p.hp<=0)return;
+    const moveId=randomChoice(enemyMon.moves),mv=MOVES[moveId];
+    if(Math.random()>mv.accuracy){
+      logMessage(`${battle.trainer ? battle.trainer.name + "'s " : "Wild "}${getMonDisplayName(enemyMon)}'s ${mv.name} missed!`);
+      return;
+    }
+    const dmg=calcDamage(enemyMon,p);
+    p.hp=Math.max(0,p.hp-dmg);
+    logMessage(`${battle.trainer ? battle.trainer.name + "'s " : "Wild "}${getMonDisplayName(enemyMon)} used ${mv.name} and dealt ${dmg} damage.`);
+    if(p.hp<=0)handlePlayerMonFainted();
+  }
+
+  if(pSpd>=wSpd){
+    pAct();
+    if(battle.active && (battle.wild || battle.trainer) && enemyMon.hp>0 && getActiveMon().hp>0)wAct();
+  }else{
+    wAct();
+    if(battle.active && (battle.wild || battle.trainer) && enemyMon.hp>0 && getActiveMon().hp>0)pAct();
+  }
+  saveGame();renderAll();
+}
+
+function tryRun(){
+  if(!battle.active || (!battle.wild && !battle.trainer))return;
+  if(battle.trainer){
+    logMessage("You can't run from a trainer battle!");
+    saveGame();renderAll();
+    return;
+  }
+  const p=getActiveMon(),w=battle.wild;
+  const chance=getSpeed(p)>=getSpeed(w)?0.9:0.6;
+  if(Math.random()<chance){
+    logMessage("You ran away!");
+    battle.active=false;battle.wild=null;
+    healPartyAfterBattle();
+    battle.participants = [];
+    saveGame();renderAll();
+  }else{
+    logMessage("Couldn't escape!");
+    const moveId=randomChoice(w.moves),mv=MOVES[moveId];
+    if(Math.random()>mv.accuracy){
+      logMessage(`Wild ${getMonDisplayName(w)}'s ${mv.name} missed!`);
+    }else{
+      const dmg=calcDamage(w,p);
+      p.hp=Math.max(0,p.hp-dmg);
+      logMessage(`Wild ${getMonDisplayName(w)} used ${mv.name} and dealt ${dmg} damage.`);
+      if(p.hp<=0)handlePlayerMonFainted();
+    }
+    saveGame();renderAll();
+  }
+}
+
+// Switch active mid-battle
+function switchActive(idx){
+  if(!battle.active || (!battle.wild && !battle.trainer))return;
+  const party = gameState.player.party;
+  if(idx<0 || idx>=party.length) return;
+  const mon = party[idx];
+  if(mon.hp<=0){
+    logMessage(`${getMonDisplayName(mon)} can't battle!`);
+    return;
+  }
+  if(idx === battle.playerIndex){
+    logMessage(`${getMonDisplayName(mon)} is already active.`);
+    return;
+  }
+  battle.playerIndex = idx;
+  markParticipant(idx);
+  logMessage(`You switched to ${getMonDisplayName(mon)}.`);
+
+  const enemyMon = battle.trainer ? battle.trainer.team[battle.trainerIndex] : battle.wild;
+  if(enemyMon && enemyMon.hp>0){
+    const moveId = randomChoice(enemyMon.moves), mv = MOVES[moveId];
+    if(Math.random()>mv.accuracy){
+      logMessage(`${battle.trainer ? battle.trainer.name + "'s " : "Wild "}${getMonDisplayName(enemyMon)}'s ${mv.name} missed!`);
+    }else{
+      const dmg = calcDamage(enemyMon, mon);
+      mon.hp = Math.max(0, mon.hp - dmg);
+      logMessage(`${battle.trainer ? battle.trainer.name + "'s " : "Wild "}${getMonDisplayName(enemyMon)} used ${mv.name} and dealt ${dmg} damage.`);
+      if(mon.hp<=0)handlePlayerMonFainted();
+    }
+  }
+  saveGame();renderAll();
+}
+
+// Training (click)
+function trainActive() {
+  const mon = getActiveMon();
+  if (!mon) {
+    logMessage("You need a monster in your party to train.");
+    return;
+  }
+  if (battle.active) {
+    logMessage("You can't do click training in the middle of a battle.");
+    return;
+  }
+
+  const trainer = gameState.trainer || { level: 1, exp: 0 };
+
+  const baseGain = 3 + Math.floor(mon.level / 5);
+  const trainerBonus = trainer.level;  // +1 EXP per Trainer level
+  const gain = baseGain + trainerBonus;
+
+  addExpToMon(mon, gain);
+  logMessage(`${getMonDisplayName(mon)} trained and gained ${gain} EXP (Trainer Lv ${trainer.level}).`);
+
+  const trainerExpGain = Math.max(1, Math.floor(gain * 0.5));
+  addTrainerExp(trainerExpGain);
+
+  saveGame();
+  renderAll();
+}
+
+// Manual evolution
+function evolveFromParty(idx){
+  const party = gameState.player.party;
+  if(idx<0 || idx>=party.length) return;
+  const mon = party[idx];
+  const s = getSpecies(mon);
+  if(s.isLegendary){
+    logMessage(`${getMonDisplayName(mon)} is a legendary and cannot evolve.`);
+    return;
+  }
+  if(!s.evolvesTo || mon.level < s.evolveLevel){
+    logMessage(`${getMonDisplayName(mon)} can't evolve yet.`);
+    return;
+  }
+  const newS = getSpeciesById(s.evolvesTo);
+  const oldName = getMonDisplayName(mon);
+  mon.speciesId = newS.id;
+  if(!mon.nickname || mon.nickname===s.name) mon.nickname = newS.name;
+  mon.hp = getMaxHP(mon);
+  delete mon.readyToEvolve;
+  ensureMonsterMoves(mon);
+  logMessage(`${oldName} evolved into ${newS.name}!`);
+  saveGame();
+  renderAll();
+}
+
+// Orbs & items
+function addCaughtMonster(mon){
+  ensureMonsterMoves(mon);
+  ensureMonBonuses(mon);
+  if(gameState.player.party.length<6){
+    gameState.player.party.push(mon);
+    logMessage(`${getMonDisplayName(mon)} joined your party!`);
+  }else{
+    gameState.player.storage.push(mon);
+    logMessage(`Party full. ${getMonDisplayName(mon)} was sent to storage.`);
+  }
+}
+
+function throwOrb(kind){
+  if(!battle.active || (!battle.wild && !battle.trainer))return;
+  if(battle.trainer){
+    logMessage("You can't capture a trainer's monster!");
+    return;
+  }
+  const inv=gameState.inventory;let key,pMult,label;
+  if(kind==="great"){key="orbGreat";pMult=1.3;label="Great Orb";}
+  else if(kind==="ultra"){key="orbUltra";pMult=1.6;label="Ultra Orb";}
+  else if(kind==="ultimate"){key="orbUltimate";pMult=0;label="Ultimate Orb";}
+  else{key="orbBasic";pMult=1;label="Basic Orb";}
+
+  if(!inv[key]||inv[key]<=0){logMessage(`You don't have any ${label}s!`);return;}
+  inv[key]--;
+
+  const w=battle.wild,s=getSpecies(w),vInfo=getVariant(w);
+
+  if(kind==="ultimate"){
+    logMessage(`You throw an ${label}...`);
+    logMessage(`${label} never fails! ${getMonDisplayName(w)} was caught!`);
+    addCaughtMonster(w);
+    battle.active=false;battle.wild=null;
+    healPartyAfterBattle();
+    battle.participants = [];
+    saveGame();renderAll();
+    return;
+  }
+
+  const hpFactor=(getMaxHP(w)-w.hp)/getMaxHP(w);
+  let chance=(s.catchRate+hpFactor*0.6)*pMult;
+  let penaltyBase=1-(vInfo.rarityRank-1)*0.03;
+  if(penaltyBase<0.5)penaltyBase=0.5;
+  const mit=(kind==="great")?0.15:(kind==="ultra"?0.3:0);
+  chance*=penaltyBase+(1-penaltyBase)*mit;
+  if(chance>0.97)chance=0.97;
+
+  if(s.isLegendary) chance *= 0.5;
+
+  logMessage(`You throw a ${label}...`);
+  if(s.isLegendary && kind!=="ultimate"){
+    logMessage("The legendary's aura resists the orb!");
+  }
+
+  if(Math.random()<chance){
+    logMessage(`Gotcha! ${getMonDisplayName(w)} was caught!`);
+    addCaughtMonster(w);
+    battle.active=false;battle.wild=null;
+    healPartyAfterBattle();
+    battle.participants = [];
+    saveGame();renderAll();
+  }else{
+    logMessage(`${getMonDisplayName(w)} broke free!`);
+    const p=getActiveMon();
+    if(!p||p.hp<=0)handlePlayerMonFainted();
+    else{
+      const moveId=randomChoice(w.moves),mv=MOVES[moveId];
+      if(Math.random()>mv.accuracy){
+        logMessage(`Wild ${getMonDisplayName(w)}'s ${mv.name} missed!`);
+      }else{
+        const dmg=calcDamage(w,p);
+        p.hp=Math.max(0,p.hp-dmg);
+        logMessage(`Wild ${getMonDisplayName(w)} used ${mv.name} and dealt ${dmg} damage.`);
+        if(p.hp<=0)handlePlayerMonFainted();
+      }
+    }
+    saveGame();renderAll();
+  }
+}
+
+function usePotionInBattle(){
+  if(!battle.active || (!battle.wild && !battle.trainer))return;
+  if(gameState.inventory.potion<=0){logMessage("You don't have any potions!");return;}
+  const mon=getActiveMon();if(!mon)return;
+  const max=getMaxHP(mon);
+  if(mon.hp>=max){logMessage(`${getMonDisplayName(mon)} is already at full HP.`);return;}
+  gameState.inventory.potion--;
+  const heal=Math.min(20,max-mon.hp);
+  mon.hp+=heal;
+  logMessage(`You used a potion. ${getMonDisplayName(mon)} recovered ${heal} HP.`);
+  const enemyMon = battle.trainer ? battle.trainer.team[battle.trainerIndex] : battle.wild;
+  if(enemyMon && enemyMon.hp>0){
+    const moveId=randomChoice(enemyMon.moves),mv=MOVES[moveId];
+    if(Math.random()>mv.accuracy){
+      logMessage(`${battle.trainer ? battle.trainer.name + "'s " : "Wild "}${getMonDisplayName(enemyMon)}'s ${mv.name} missed!`);
+    }else{
+      const dmg=calcDamage(enemyMon,mon);
+      mon.hp=Math.max(0,mon.hp-dmg);
+      logMessage(`${battle.trainer ? battle.trainer.name + "'s " : "Wild "}${getMonDisplayName(enemyMon)} used ${mv.name} and dealt ${dmg} damage.`);
+      if(mon.hp<=0)handlePlayerMonFainted();
+    }
+  }
+  saveGame();renderAll();
+}
+
+function healMonsterFromParty(idx){
+  const mon=gameState.player.party[idx];if(!mon)return;
+  if(battle.active){logMessage("Use potions from the battle screen during combat.");return;}
+  if(gameState.inventory.potion<=0){logMessage("You don't have any potions!");return;}
+  const max=getMaxHP(mon);
+  if(mon.hp>=max){logMessage(`${getMonDisplayName(mon)} is already at full HP.`);return;}
+  gameState.inventory.potion--;
+  const heal=Math.min(20,max-mon.hp);
+  mon.hp+=heal;
+  logMessage(`You used a potion on ${getMonDisplayName(mon)}. It recovered ${heal} HP.`);
+  saveGame();renderAll();
+}
+
+// Stat & XP items
+function useStatCore(stat, partyIndex) {
+  const inv = gameState.inventory;
+  const mon = gameState.player.party[partyIndex];
+  if (!mon) return;
+
+  let key, field, amount, label;
+  if (stat === "hp")   { key="hpCore";  field="hpBonus";  amount=5; label="HP Core"; }
+  if (stat === "atk")  { key="atkCore"; field="atkBonus"; amount=2; label="Attack Core"; }
+  if (stat === "def")  { key="defCore"; field="defBonus"; amount=2; label="Defense Core"; }
+  if (stat === "spd")  { key="spdCore"; field="spdBonus"; amount=2; label="Speed Core"; }
+
+  if (!key || inv[key] <= 0) {
+    logMessage(`You don't have any ${label}s.`);
+    return;
+  }
+
+  inv[key]--;
+  mon[field] = (mon[field] || 0) + amount;
+  mon.hp = Math.min(getMaxHP(mon), mon.hp + amount);
+  logMessage(`You used a ${label} on ${getMonDisplayName(mon)}. Its ${stat.toUpperCase()} increased!`);
+  saveGame();
+  renderAll();
+}
+
+function useXpChip(partyIndex) {
+  const inv = gameState.inventory;
+  if (inv.xpChip <= 0) {
+    logMessage("You don't have any XP Chips.");
+    return;
+  }
+  const mon = gameState.player.party[partyIndex];
+  if (!mon) return;
+
+  inv.xpChip--;
+  const gain = 10 + Math.floor(mon.level / 2);
+  addExpToMon(mon, gain);
+  logMessage(`${getMonDisplayName(mon)} absorbed an XP Chip and gained ${gain} EXP.`);
+  saveGame();
+  renderAll();
+}
+
+// Item drops
+function tryDropItem(isTrainer) {
+  const dropChance = isTrainer ? 0.4 : 0.2;
+  if (Math.random() >= dropChance) return;
+
+  const table = ["hpCore","atkCore","defCore","spdCore","xpChip","xpChip"];
+  const key = randomChoice(table);
+  const inv = gameState.inventory;
+  inv[key] = (inv[key] || 0) + 1;
+
+  const names = {
+    hpCore:"HP Core",
+    atkCore:"Attack Core",
+    defCore:"Defense Core",
+    spdCore:"Speed Core",
+    xpChip:"XP Chip"
+  };
+  logMessage(`You found a ${names[key]}!`);
+}
+
+// Storage
+function movePartyToStorage(idx){
+  const party=gameState.player.party;
+  if(idx<0||idx>=party.length)return;
+  const [mon]=party.splice(idx,1);
+  gameState.player.storage.push(mon);
+  logMessage(`Sent ${getMonDisplayName(mon)} to storage.`);
+  if(battle.playerIndex>=party.length)battle.playerIndex=0;
+  saveGame();renderAll();
+}
+
+function moveStorageToParty(idx){
+  const box=gameState.player.storage;
+  if(idx<0||idx>=box.length)return;
+  if(gameState.player.party.length>=6){logMessage("Party is full!");return;}
+  const [mon]=box.splice(idx,1);
+  gameState.player.party.push(mon);
+  logMessage(`Moved ${getMonDisplayName(mon)} to your party.`);
+  saveGame();renderAll();
+}
+
+function setStorageSort(mode){
+  storageSortMode = mode==="level" ? "level" : "dex";
+  renderStorage();
+  refreshAllIcons();
+}
+
+// Trainers
+const TRAINER_NAMES = [
+  "Rival Ken","Scout Mia","Ace Rowan","Tamer Sol","Ranger Kira",
+  "Handler Jax","Mystic Lyra","Veteran Cole","Leader Nia","Trainer Ashen"
+];
+
+function averagePartyLevel(){
+  const p = gameState.player.party;
+  if(!p.length) return 5;
+  const sum = p.reduce((acc,m)=>acc+m.level,0);
+  return Math.max(2, Math.round(sum/p.length));
+}
+
+function generateTrainerTeamScaled(){
+  const avg = averagePartyLevel();
+  const sizeRoll = Math.random();
+  let count;
+  if(sizeRoll<0.3) count=1;
+  else if(sizeRoll<0.6) count=2;
+  else if(sizeRoll<0.8) count=3;
+  else if(sizeRoll<0.93) count=4;
+  else if(sizeRoll<0.98) count=5;
+  else count=6;
+
+  const diffRoll = Math.random();
+  let difficulty = "normal";
+  if(diffRoll < 0.25) difficulty = "easy";
+  else if(diffRoll > 0.75) difficulty = "hard";
+
+  let offsetOptions;
+  if(difficulty==="easy"){
+    offsetOptions = [-10,-8,-6,-5,-4,-3,-2,-1,0];
+  }else if(difficulty==="hard"){
+    offsetOptions = [0,1,2,3,4,5,6,8,10,12];
+  }else{
+    offsetOptions = [-3,-2,-1,0,0,0,1,1,2,3];
+  }
+
+  const pool = MONSTERS.filter(m => !m.isLegendary);
+  const team=[];
+  for(let i=0;i<count;i++){
+    const species = randomChoice(pool);
+    const off = randomChoice(offsetOptions);
+    const base = avg + off;
+    const jitter = Math.floor(Math.random()*3)-1;
+    const lvl = Math.max(2, Math.min(80, base + jitter));
+    team.push(createMonsterInstance(species.id, lvl));
+  }
+  return team;
+}
+
+function generateTrainerTeamChaos(){
+  const count = 1 + Math.floor(Math.random()*6);
+  const pool = MONSTERS.filter(m => !m.isLegendary);
+  const team=[];
+  for(let i=0;i<count;i++){
+    const species = randomChoice(pool);
+    const lvl = 2 + Math.floor(Math.random()*79);
+    team.push(createMonsterInstance(species.id, lvl));
+  }
+  return team;
+}
+
+function startTrainerBattle(scaled){
+  if(battle.active){
+    logMessage("Finish your current battle first!");
+    return;
+  }
+  const party=gameState.player.party;
+  const healthyIndex=getFirstHealthyIndex();
+  if(!party.length || healthyIndex===-1){
+    logMessage("You need at least one healthy monster to battle a trainer.");
+    return;
+  }
+  const name = randomChoice(TRAINER_NAMES);
+  const team = scaled ? generateTrainerTeamScaled() : generateTrainerTeamChaos();
+  battle.active=true;
+  battle.trainer={name, team};
+  battle.trainerIndex=0;
+  battle.wild=null;
+  battle.playerIndex=healthyIndex;
+  battle.participants = [];
+  markParticipant(healthyIndex);
+  logMessage(`Trainer ${name} challenges you to a battle!`);
+  const firstMon = team[0];
+  logMessage(`${name} sends out ${getMonDisplayName(firstMon)} (Lv ${firstMon.level})!`);
+  saveGame();renderAll();
+}
+
+// Explore
+function explore(){
+  if(battle.active){logMessage("You are already in a battle!");return;}
+  const party=gameState.player.party;
+  if(!party.length){logMessage("You have no monsters in your party.");return;}
+  if(Math.random()>=0.75){logMessage("You explore for a while but don't find anything...");return;}
+
+  const legendaryChance = 0.01;
+  if (LEGENDARY_IDS.length && Math.random() < legendaryChance) {
+    const avg=Math.max(2,Math.round(party.reduce((sum,m)=>sum+m.level,0)/party.length));
+    const speciesId = randomChoice(LEGENDARY_IDS);
+    const s = getSpeciesById(speciesId);
+    const minL = Math.max(30, avg + 3);
+    const maxL = minL + 8;
+    const lvl = Math.floor(Math.random()*(maxL-minL+1))+minL;
+    const wild = createMonsterInstance(speciesId, lvl);
+
+    battle.active=true;
+    battle.wild=wild;
+    battle.trainer=null;
+    battle.trainerIndex=0;
+    battle.playerIndex=getFirstHealthyIndex();
+    battle.participants = [];
+    markParticipant(battle.playerIndex);
+
+    logMessage("✨ LEGENDARY ENCOUNTER! ✨");
+    logMessage(`The air trembles... ${getMonDisplayName(wild)} (Lv ${wild.level}) appears!`);
+    saveGame();
+    renderAll();
+    return;
+  }
+
+  const trainerChance = 0.35;
+  if(Math.random() < trainerChance){
+    startTrainerBattle(true);
+    return;
+  }
+
+  const stage = 1;
+  const candidates=MONSTERS.filter(m=>m.stage===stage && !m.isLegendary);
+  const s=randomChoice(candidates);
+
+  const avg=Math.max(2,Math.round(party.reduce((sum,m)=>sum+m.level,0)/party.length));
+  const minL=Math.max(2,avg-3),maxL=avg+3;
+  const lvl=Math.floor(Math.random()*(maxL-minL+1))+minL;
+  const wild=createMonsterInstance(s.id,lvl);
+  battle.active=true;battle.wild=wild;battle.trainer=null;battle.trainerIndex=0;battle.playerIndex=getFirstHealthyIndex();
+  battle.participants = [];
+  markParticipant(battle.playerIndex);
+  logMessage(`A wild ${getMonDisplayName(wild)} (Lv ${wild.level}) appeared!`);
+  saveGame();renderAll();
+}
+
+function battleRandomTrainerChaos(){
+  startTrainerBattle(false);
+}
+
+// Shop
+function buyItem(type){
+  let cost;
+  if(type==="potion")cost=50;
+  else if(type==="orbBasic")cost=100;
+  else if(type==="orbGreat")cost=300;
+  else if(type==="orbUltra")cost=800;
+  else if(type==="orbUltimate")cost=5000;
+  else return;
+  if(gameState.player.money<cost){logMessage("Not enough money.");return;}
+  gameState.player.money-=cost;
+  if(type==="potion"){gameState.inventory.potion++;logMessage("You bought a Potion.");}
+  else if(type==="orbBasic"){gameState.inventory.orbBasic++;logMessage("You bought a Basic Orb.");}
+  else if(type==="orbGreat"){gameState.inventory.orbGreat++;logMessage("You bought a Great Orb.");}
+  else if(type==="orbUltra"){gameState.inventory.orbUltra++;logMessage("You bought an Ultra Orb.");}
+  else if(type==="orbUltimate"){gameState.inventory.orbUltimate++;logMessage("You bought an Ultimate Orb.");}
+  saveGame();renderAll();
+}
+
+// Expose to window
+window.buyItem=buyItem;
+window.useMove=useMove;
+window.usePotionInBattle=usePotionInBattle;
+window.throwOrb=throwOrb;
+window.tryRun=tryRun;
+window.evolveFromParty=evolveFromParty;
+window.setStorageSort=setStorageSort;
+window.battleRandomTrainerChaos=battleRandomTrainerChaos;
+window.switchActive=switchActive;
+window.trainActive=trainActive;
+window.useStatCore=useStatCore;
+window.useXpChip=useXpChip;
+
+document.addEventListener("DOMContentLoaded",()=>{
+  document.querySelectorAll("#nav button").forEach(btn=>{
+    btn.addEventListener("click",()=>showSection(btn.dataset.section));
+  });
+  document.getElementById("explore-btn").addEventListener("click",explore);
+  document.getElementById("random-trainer-btn").addEventListener("click",battleRandomTrainerChaos);
+  document.getElementById("reset-btn").addEventListener("click",resetGame);
+  loadGame();
+});
+</script>
+</body>
+</html>
